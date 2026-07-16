@@ -30,21 +30,20 @@ tests/
 
 ## ?? Features
 
-### MVP (Phase 1)
-- ? Multi-tenant architecture with tenant isolation
-- ? Student management
-- ? Guardian/Parent management
-- ? Attendance tracking with SMS notifications
-- ? Fee management and payments
-- ? Role-based access control (RBAC)
-- ? JWT authentication
+### Implemented
+- Multi-tenant architecture with tenant isolation
+- Student management
+- Academic management (classes, subjects, assessments, results)
+- Attendance tracking
+- Fee management (invoicing and payment recording)
+- Permission-based access control (RBAC)
+- JWT authentication and tenant provisioning
 
-### Phase 2 (Planned)
-- ?? Learning Management System (LMS)
-- ?? Analytics and dashboards
-- ?? Transport management
-- ?? Asset management
-- ?? Library management
+### Planned
+See **[docs/ROADMAP.md](docs/ROADMAP.md)** for the full product strategy and phased roadmap, including:
+- Phase 1 — guardians, enrollment, fee structures with bulk invoicing, Paynow payment gateway, SMS/WhatsApp notifications, report cards
+- Phase 2 — staff/HR, timetable, discipline, parent portal, finance depth
+- Phase 3 — boarding/hostel, assets, analytics, transport, library, LMS-lite
 
 ## ?? Prerequisites
 
