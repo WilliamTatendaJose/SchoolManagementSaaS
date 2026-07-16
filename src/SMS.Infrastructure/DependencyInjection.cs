@@ -9,6 +9,7 @@ using SMS.Application.Interfaces;
 using SMS.Infrastructure.Authorization;
 using SMS.Infrastructure.Persistence;
 using SMS.Infrastructure.Services;
+using SMS.Infrastructure.Services.Payments;
 using System.Text;
 
 namespace SMS.Infrastructure;
@@ -31,6 +32,10 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ISmsService, SmsService>();
         services.AddScoped<IFileStorageService, S3FileStorageService>();
+
+        // Payment gateway (Paynow)
+        services.Configure<PaynowOptions>(configuration.GetSection(PaynowOptions.SectionName));
+        services.AddHttpClient<IPaymentGatewayService, PaynowPaymentGatewayService>();
 
         // AWS S3
         services.AddDefaultAWSOptions(configuration.GetAWSOptions());

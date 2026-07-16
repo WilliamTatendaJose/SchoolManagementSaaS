@@ -26,4 +26,8 @@
     <ProjectReference Include="..\SMS.Application\SMS.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SMS.Infrastructure.Tests" />
+  </ItemGroup>
+
 </Project>

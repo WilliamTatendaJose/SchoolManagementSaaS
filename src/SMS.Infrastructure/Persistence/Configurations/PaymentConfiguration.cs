@@ -34,6 +34,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Notes)
             .HasMaxLength(500);
 
+        builder.Property(p => p.GatewayPollUrl)
+            .HasMaxLength(500);
+
         builder.HasOne(p => p.Invoice)
             .WithMany(i => i.Payments)
             .HasForeignKey(p => p.InvoiceId)

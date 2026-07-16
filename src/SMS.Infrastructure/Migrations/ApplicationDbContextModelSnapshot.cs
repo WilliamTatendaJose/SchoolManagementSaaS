@@ -1353,6 +1353,10 @@ namespace SMS.Infrastructure.Migrations
                     b.Property<string>("DeletedBy")
                         .HasColumnType("text");
 
+                    b.Property<string>("GatewayPollUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<Guid>("InvoiceId")
                         .HasColumnType("uuid");
 

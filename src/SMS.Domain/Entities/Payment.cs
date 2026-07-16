@@ -19,6 +19,9 @@ public class Payment : TenantEntity
     public string? BankName { get; set; }
     public string? Notes { get; set; }
     public Guid? ReceivedById { get; set; }
+
+    // Online payment gateway (e.g. Paynow) correlation
+    public string? GatewayPollUrl { get; set; }
     
     // Navigation properties
     public virtual Invoice Invoice { get; set; } = null!;
