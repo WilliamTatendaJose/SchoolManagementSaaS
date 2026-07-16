@@ -43,6 +43,8 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
             return Result<InvoiceGenerationResultDto>.Failure("No active enrollments found for the selected term/class");
         }
 
+        var cohortIds = enrollments.Select(e => e.StudentId).ToHashSet();
+
         // Fee structures for the year, grouped by class, honouring the optional-fee flag
         var feeStructureQuery = _context.FeeStructures
             .Where(f => f.AcademicYearId == term.AcademicYearId);
@@ -68,6 +70,9 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
             .ToListAsync(cancellationToken))
             .ToHashSet();
 
+        var siblingDiscount = await BuildSiblingDiscountEvaluatorAsync(request, cohortIds, cancellationToken);
+        var arrearsByStudent = await BuildArrearsMapAsync(request, cohortIds, cancellationToken);
+
         var year = DateTime.UtcNow.Year;
         var invoiceSequence = await _context.Invoices
             .CountAsync(i => i.InvoiceDate.Year == year, cancellationToken);
@@ -76,6 +81,8 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
         var studentsSkipped = 0;
         var studentsWithoutFees = 0;
         decimal totalBilled = 0m;
+        decimal totalDiscount = 0m;
+        decimal totalArrears = 0m;
 
         // One invoice per student even if (defensively) multiple enrollments exist
         var processedStudents = new HashSet<Guid>();
@@ -99,6 +106,12 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
                 continue;
             }
 
+            var feeSubtotal = fees.Sum(f => f.Amount);
+            var discount = siblingDiscount(enrollment.StudentId)
+                ? Math.Round(feeSubtotal * request.SiblingDiscountPercent / 100m, 2)
+                : 0m;
+            var arrears = arrearsByStudent.GetValueOrDefault(enrollment.StudentId, 0m);
+
             invoiceSequence++;
             var invoice = new Invoice
             {
@@ -107,8 +120,8 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
                 AcademicTermId = request.AcademicTermId,
                 InvoiceDate = DateTime.UtcNow,
                 DueDate = request.DueDate,
-                TotalAmount = fees.Sum(f => f.Amount),
-                DiscountAmount = 0
+                TotalAmount = feeSubtotal + arrears,
+                DiscountAmount = discount
             };
 
             foreach (var fee in fees)
@@ -122,9 +135,21 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
                 });
             }
 
+            if (arrears > 0)
+            {
+                invoice.Items.Add(new InvoiceItem
+                {
+                    Description = "Arrears brought forward",
+                    Amount = arrears,
+                    Quantity = 1
+                });
+            }
+
             _context.Invoices.Add(invoice);
             invoicesCreated++;
-            totalBilled += invoice.TotalAmount;
+            totalBilled += feeSubtotal;
+            totalDiscount += discount;
+            totalArrears += arrears;
         }
 
         if (invoicesCreated > 0)
@@ -137,7 +162,94 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
             InvoicesCreated = invoicesCreated,
             StudentsSkipped = studentsSkipped,
             StudentsWithoutFees = studentsWithoutFees,
-            TotalBilled = totalBilled
+            TotalBilled = totalBilled,
+            TotalDiscount = totalDiscount,
+            TotalArrearsCarriedForward = totalArrears
         });
+    }
+
+    /// <summary>
+    /// Returns a predicate telling whether a student should receive the sibling discount:
+    /// true when the student shares a guardian with at least one older student in the run
+    /// (the eldest sibling pays full fees).
+    /// </summary>
+    private async Task<Func<Guid, bool>> BuildSiblingDiscountEvaluatorAsync(
+        GenerateInvoicesCommand request, HashSet<Guid> cohortIds, CancellationToken cancellationToken)
+    {
+        if (request.SiblingDiscountPercent <= 0)
+        {
+            return _ => false;
+        }
+
+        var dobByStudent = await _context.Students
+            .Where(s => cohortIds.Contains(s.Id))
+            .Select(s => new { s.Id, s.DateOfBirth })
+            .ToDictionaryAsync(s => s.Id, s => s.DateOfBirth, cancellationToken);
+
+        var links = await _context.StudentGuardians
+            .Where(sg => cohortIds.Contains(sg.StudentId))
+            .Select(sg => new { sg.StudentId, sg.GuardianId })
+            .ToListAsync(cancellationToken);
+
+        var guardiansByStudent = links
+            .GroupBy(l => l.StudentId)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.GuardianId).ToHashSet());
+
+        var studentsByGuardian = links
+            .GroupBy(l => l.GuardianId)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.StudentId).ToList());
+
+        return studentId =>
+        {
+            if (!guardiansByStudent.TryGetValue(studentId, out var guardianIds))
+            {
+                return false;
+            }
+
+            var siblingSet = new HashSet<Guid>();
+            foreach (var guardianId in guardianIds)
+            {
+                foreach (var sibling in studentsByGuardian[guardianId])
+                {
+                    siblingSet.Add(sibling);
+                }
+            }
+
+            if (siblingSet.Count <= 1)
+            {
+                return false;
+            }
+
+            var eldest = siblingSet
+                .OrderBy(id => dobByStudent[id])
+                .ThenBy(id => id)
+                .First();
+
+            return studentId != eldest;
+        };
+    }
+
+    private async Task<Dictionary<Guid, decimal>> BuildArrearsMapAsync(
+        GenerateInvoicesCommand request, HashSet<Guid> cohortIds, CancellationToken cancellationToken)
+    {
+        if (!request.CarryForwardArrears)
+        {
+            return [];
+        }
+
+        var invoices = await _context.Invoices
+            .Where(i => cohortIds.Contains(i.StudentId))
+            .Select(i => new { i.StudentId, i.TotalAmount, i.DiscountAmount, i.PaidAmount })
+            .ToListAsync(cancellationToken);
+
+        return invoices
+            .GroupBy(i => i.StudentId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Sum(x =>
+                {
+                    var balance = x.TotalAmount - x.DiscountAmount - x.PaidAmount;
+                    return balance > 0 ? balance : 0m;
+                }));
     }
 }

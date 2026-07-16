@@ -41,4 +41,29 @@ public class GenerateInvoicesCommandValidatorTests
 
         result.ShouldHaveValidationErrorFor(x => x.DueDate);
     }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(101)]
+    public void Validate_ShouldFail_WhenSiblingDiscountPercentIsOutOfRange(decimal percent)
+    {
+        var command = ValidCommand() with { SiblingDiscountPercent = percent };
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.SiblingDiscountPercent);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(10)]
+    [InlineData(100)]
+    public void Validate_ShouldPass_WhenSiblingDiscountPercentIsInRange(decimal percent)
+    {
+        var command = ValidCommand() with { SiblingDiscountPercent = percent };
+
+        var result = _validator.TestValidate(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.SiblingDiscountPercent);
+    }
 }

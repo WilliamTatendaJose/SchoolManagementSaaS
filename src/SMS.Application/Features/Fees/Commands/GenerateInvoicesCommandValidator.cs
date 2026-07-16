@@ -11,5 +11,8 @@ public class GenerateInvoicesCommandValidator : AbstractValidator<GenerateInvoic
 
         RuleFor(x => x.DueDate)
             .NotEmpty().WithMessage("Due date is required");
+
+        RuleFor(x => x.SiblingDiscountPercent)
+            .InclusiveBetween(0, 100).WithMessage("Sibling discount percent must be between 0 and 100");
     }
 }
