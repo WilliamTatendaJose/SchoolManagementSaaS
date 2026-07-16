@@ -114,12 +114,34 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         }
     }
 
-    private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : class, ITenantEntity
+    private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : BaseEntity, ITenantEntity
     {
-        modelBuilder.Entity<T>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        // Combine tenant isolation and soft-delete into a single filter. EF Core replaces
+        // an entity's unnamed query filter on each HasQueryFilter call, so a per-config
+        // "!IsDeleted" filter would otherwise be dropped when this tenant filter is applied.
+        modelBuilder.Entity<T>().HasQueryFilter(e => e.TenantId == CurrentTenantId && !e.IsDeleted);
     }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    // Both SaveChanges() and SaveChangesAsync(CancellationToken) delegate to these
+    // "acceptAllChangesOnSuccess" overloads in the base DbContext, so overriding them here
+    // guarantees audit/tenant/soft-delete rules run on every persistence path exactly once.
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        ApplyAuditAndTenantRules();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        ApplyAuditAndTenantRules();
+        return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    /// <summary>
+    /// Stamps audit fields, converts deletes into soft-deletes, and stamps TenantId on new
+    /// tenant entities. Runs regardless of whether SaveChanges was called synchronously.
+    /// </summary>
+    private void ApplyAuditAndTenantRules()
     {
         var tenantId = _tenantService.GetCurrentTenantId();
         var userId = _currentUserService.UserId?.ToString();
@@ -154,7 +176,5 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 entry.Entity.TenantId = tenantId.Value;
             }
         }
-
-        return await base.SaveChangesAsync(cancellationToken);
     }
 }

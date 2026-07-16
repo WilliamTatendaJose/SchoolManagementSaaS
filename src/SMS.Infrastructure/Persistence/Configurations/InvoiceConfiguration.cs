@@ -45,6 +45,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Ignore(i => i.IsPaid);
         builder.Ignore(i => i.DomainEvents);
 
-        builder.HasQueryFilter(i => !i.IsDeleted);
+        // Soft-delete + tenant isolation are applied centrally in
+        // ApplicationDbContext.ApplyTenantFilter for all tenant entities.
     }
 }

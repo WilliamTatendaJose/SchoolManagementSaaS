@@ -42,6 +42,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasForeignKey(u => u.TenantId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasQueryFilter(u => !u.IsDeleted);
+        // Soft-delete + tenant isolation are applied centrally in
+        // ApplicationDbContext.ApplyTenantFilter for all tenant entities.
     }
 }

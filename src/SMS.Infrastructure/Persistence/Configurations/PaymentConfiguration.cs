@@ -47,6 +47,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .HasForeignKey(p => p.ReceivedById)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasQueryFilter(p => !p.IsDeleted);
+        // Soft-delete + tenant isolation are applied centrally in
+        // ApplicationDbContext.ApplyTenantFilter for all tenant entities.
     }
 }

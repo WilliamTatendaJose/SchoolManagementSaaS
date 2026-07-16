@@ -79,6 +79,7 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
 
         builder.Ignore(s => s.DomainEvents);
 
-        builder.HasQueryFilter(s => !s.IsDeleted);
+        // Soft-delete + tenant isolation are applied centrally in
+        // ApplicationDbContext.ApplyTenantFilter for all tenant entities.
     }
 }
