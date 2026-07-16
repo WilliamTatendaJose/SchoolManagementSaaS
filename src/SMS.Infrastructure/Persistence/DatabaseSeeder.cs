@@ -70,6 +70,8 @@ public static class DatabaseSeeder
 
             // Finance
             new() { Name = "View Finance", Code = Permissions.FinanceView, Module = "Finance", Description = "View financial data" },
+            new() { Name = "View Fee Structures", Code = Permissions.FeeStructuresView, Module = "Finance", Description = "View fee structures" },
+            new() { Name = "Manage Fee Structures", Code = Permissions.FeeStructuresManage, Module = "Finance", Description = "Create/edit fee structures" },
             new() { Name = "Create Invoices", Code = Permissions.InvoicesCreate, Module = "Finance", Description = "Create invoices" },
             new() { Name = "Edit Invoices", Code = Permissions.InvoicesEdit, Module = "Finance", Description = "Edit invoices" },
             new() { Name = "Record Payments", Code = Permissions.PaymentsRecord, Module = "Finance", Description = "Record payments" },

@@ -47,6 +47,8 @@ public static class Permissions
 
     // Finance
     public const string FinanceView = "finance.view";
+    public const string FeeStructuresView = "feestructures.view";
+    public const string FeeStructuresManage = "feestructures.manage";
     public const string InvoicesCreate = "invoices.create";
     public const string InvoicesEdit = "invoices.edit";
     public const string PaymentsRecord = "payments.record";
