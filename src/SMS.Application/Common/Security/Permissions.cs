@@ -18,6 +18,11 @@ public static class Permissions
     public const string GuardiansEdit = "guardians.edit";
     public const string GuardiansDelete = "guardians.delete";
 
+    // Enrollment Management
+    public const string EnrollmentsView = "enrollments.view";
+    public const string EnrollmentsManage = "enrollments.manage";
+    public const string EnrollmentsPromote = "enrollments.promote";
+
     // Academic Management
     public const string ClassesView = "classes.view";
     public const string ClassesManage = "classes.manage";

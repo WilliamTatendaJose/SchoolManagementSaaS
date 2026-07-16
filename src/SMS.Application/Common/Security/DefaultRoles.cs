@@ -30,6 +30,7 @@ public static class DefaultRoles
                 // SuperAdmin has all permissions
                 Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsDelete, Permissions.StudentsExport,
                 Permissions.GuardiansView, Permissions.GuardiansCreate, Permissions.GuardiansEdit, Permissions.GuardiansDelete,
+                Permissions.EnrollmentsView, Permissions.EnrollmentsManage, Permissions.EnrollmentsPromote,
                 Permissions.ClassesView, Permissions.ClassesManage, Permissions.SubjectsView, Permissions.SubjectsManage,
                 Permissions.TimetableView, Permissions.TimetableManage,
                 Permissions.AssessmentsView, Permissions.AssessmentsCreate, Permissions.AssessmentsEdit,
@@ -47,6 +48,7 @@ public static class DefaultRoles
             {
                 Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsDelete, Permissions.StudentsExport,
                 Permissions.GuardiansView, Permissions.GuardiansCreate, Permissions.GuardiansEdit, Permissions.GuardiansDelete,
+                Permissions.EnrollmentsView, Permissions.EnrollmentsManage, Permissions.EnrollmentsPromote,
                 Permissions.ClassesView, Permissions.ClassesManage, Permissions.SubjectsView, Permissions.SubjectsManage,
                 Permissions.TimetableView, Permissions.TimetableManage,
                 Permissions.AssessmentsView, Permissions.AssessmentsCreate, Permissions.AssessmentsEdit,
@@ -64,6 +66,7 @@ public static class DefaultRoles
             {
                 Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsExport,
                 Permissions.GuardiansView, Permissions.GuardiansCreate, Permissions.GuardiansEdit,
+                Permissions.EnrollmentsView, Permissions.EnrollmentsManage, Permissions.EnrollmentsPromote,
                 Permissions.ClassesView, Permissions.ClassesManage, Permissions.SubjectsView, Permissions.SubjectsManage,
                 Permissions.TimetableView, Permissions.TimetableManage,
                 Permissions.AssessmentsView, Permissions.AssessmentsCreate, Permissions.AssessmentsEdit,
@@ -79,6 +82,7 @@ public static class DefaultRoles
             {
                 Permissions.StudentsView,
                 Permissions.GuardiansView,
+                Permissions.EnrollmentsView,
                 Permissions.ClassesView, Permissions.SubjectsView,
                 Permissions.TimetableView,
                 Permissions.AssessmentsView, Permissions.AssessmentsCreate, Permissions.AssessmentsEdit,
@@ -92,6 +96,7 @@ public static class DefaultRoles
             {
                 Permissions.StudentsView,
                 Permissions.GuardiansView,
+                Permissions.EnrollmentsView,
                 Permissions.FinanceView, Permissions.InvoicesCreate, Permissions.InvoicesEdit, Permissions.PaymentsRecord, Permissions.PaymentsRefund, Permissions.FinanceReport,
                 Permissions.MessagesView, Permissions.MessagesSend,
                 Permissions.ReportsFinance

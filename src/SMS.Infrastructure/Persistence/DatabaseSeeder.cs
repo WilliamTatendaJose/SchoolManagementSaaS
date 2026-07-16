@@ -41,6 +41,11 @@ public static class DatabaseSeeder
             new() { Name = "Edit Guardians", Code = Permissions.GuardiansEdit, Module = "Guardians", Description = "Edit guardian records" },
             new() { Name = "Delete Guardians", Code = Permissions.GuardiansDelete, Module = "Guardians", Description = "Delete guardians" },
 
+            // Enrollment
+            new() { Name = "View Enrollments", Code = Permissions.EnrollmentsView, Module = "Enrollment", Description = "View student enrollments" },
+            new() { Name = "Manage Enrollments", Code = Permissions.EnrollmentsManage, Module = "Enrollment", Description = "Enroll, transfer and withdraw students" },
+            new() { Name = "Promote Students", Code = Permissions.EnrollmentsPromote, Module = "Enrollment", Description = "Bulk promote students to a new class/year" },
+
             // Academic
             new() { Name = "View Classes", Code = Permissions.ClassesView, Module = "Academic", Description = "View class information" },
             new() { Name = "Manage Classes", Code = Permissions.ClassesManage, Module = "Academic", Description = "Create/edit classes" },
