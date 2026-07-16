@@ -86,6 +86,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     // Audit
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
+    /// <summary>
+    /// The tenant scoping the current context. Referenced by the global query filter so
+    /// that EF Core re-evaluates it against the executing context on every query, rather
+    /// than baking a single tenant into the cached model (which would leak data across
+    /// tenants once the model is first built).
+    /// </summary>
+    public Guid? CurrentTenantId => _tenantService.GetCurrentTenantId();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -98,17 +106,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             if (typeof(ITenantEntity).IsAssignableFrom(entityType.ClrType))
             {
                 var method = typeof(ApplicationDbContext)
-                    .GetMethod(nameof(ApplyTenantFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+                    .GetMethod(nameof(ApplyTenantFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
                     .MakeGenericMethod(entityType.ClrType);
 
-                method.Invoke(null, [modelBuilder, _tenantService]);
+                method.Invoke(this, [modelBuilder]);
             }
         }
     }
 
-    private static void ApplyTenantFilter<T>(ModelBuilder modelBuilder, ITenantService tenantService) where T : class, ITenantEntity
+    private void ApplyTenantFilter<T>(ModelBuilder modelBuilder) where T : class, ITenantEntity
     {
-        modelBuilder.Entity<T>().HasQueryFilter(e => e.TenantId == tenantService.GetCurrentTenantId());
+        modelBuilder.Entity<T>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
