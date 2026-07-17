@@ -11,6 +11,7 @@ using SMS.Infrastructure.Persistence;
 using SMS.Infrastructure.Services;
 using SMS.Infrastructure.Services.Messaging;
 using SMS.Infrastructure.Services.Payments;
+using SMS.Infrastructure.Services.Reports;
 using System.Text;
 
 namespace SMS.Infrastructure;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IFileStorageService, S3FileStorageService>();
+        services.AddScoped<IReportCardGenerator, ReportCardPdfGenerator>();
 
         // Messaging (SMS + WhatsApp channels)
         services.Configure<SmsOptions>(configuration.GetSection(SmsOptions.SectionName));

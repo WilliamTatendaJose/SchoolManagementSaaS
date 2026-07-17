@@ -169,8 +169,34 @@ public class AcademicController : BaseApiController
         
         if (!result.IsSuccess)
             return NotFound(result.Error);
-            
+
         return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Download a PDF report card for a student and term.
+    /// </summary>
+    [HttpGet("students/{studentId:guid}/report-card")]
+    public async Task<IActionResult> GetReportCard(
+        Guid studentId,
+        [FromQuery] Guid termId,
+        [FromQuery] string? scheme,
+        [FromQuery] string? classTeacherComment,
+        [FromQuery] string? headComment)
+    {
+        var result = await Mediator.Send(new GenerateReportCardQuery
+        {
+            StudentId = studentId,
+            AcademicTermId = termId,
+            GradingScheme = scheme,
+            ClassTeacherComment = classTeacherComment,
+            HeadComment = headComment
+        });
+
+        if (!result.IsSuccess)
+            return NotFound(result.Error);
+
+        return File(result.Data!.Content, "application/pdf", result.Data.FileName);
     }
 
     #endregion
