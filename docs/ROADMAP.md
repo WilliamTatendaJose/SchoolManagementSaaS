@@ -17,7 +17,7 @@ A working document capturing product direction, feature priorities, frontend app
 
 **Still data-model only / not started:** `Stream` (class streams). New entities are needed for the deferred items below.
 
-**Known follow-ups / deferred (need new entities or infra):** transport, library, and LMS-lite modules; persisted report-card teacher/head comments; and the frontend (no UI yet).
+**Known follow-ups / deferred (need new entities or infra):** transport, library, and LMS-lite modules; and the frontend (no UI yet).
 
 ---
 
@@ -67,7 +67,7 @@ Every item follows the established slice pattern: entity (mostly already exists)
 4. ✅ **Paynow payment gateway** — `IPaymentGatewayService` in Infrastructure. Redirect + status-poll flow with an idempotent callback handler that settles invoices. Manual recording stays for cash/bank. *(Live HTTP unverified — needs sandbox credentials.)*
 5. ✅ **SMS + WhatsApp channels** — config-driven `SmsService` and a channel abstraction (`IMessageChannel`) with SMS and WhatsApp Business implementations, provider-neutral and buildable without credentials.
 6. ✅ **Notification dispatch** (`Message`, `MessageRecipient`) — recipient resolution to guardians, per-recipient delivery tracking, and templates for announcements and fee reminders. *(Synchronous; resilient outbox + background worker is a follow-up.)*
-7. ✅ **Report cards** — QuestPDF PDF generation from `Assessment`/`Result` data, with ZIMSEC and Cambridge grade scales and optional teacher/head comments.
+7. ✅ **Report cards** — QuestPDF PDF generation from `Assessment`/`Result` data, with ZIMSEC and Cambridge grade scales and persisted, editable teacher/head comments (`ReportCardComment`, one per student per term).
 
 ### Phase 2 — Full school office — ✅ complete (with noted deferrals)
 

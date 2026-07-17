@@ -44,6 +44,19 @@ public class GenerateReportCardQueryHandler : IRequestHandler<GenerateReportCard
         var tenant = await _context.Tenants
             .FirstOrDefaultAsync(t => t.Id == _currentUser.TenantId, cancellationToken);
 
+        var classTeacherComment = request.ClassTeacherComment;
+        var headComment = request.HeadComment;
+
+        if (classTeacherComment == null || headComment == null)
+        {
+            var saved = await _context.ReportCardComments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.StudentId == request.StudentId && c.AcademicTermId == request.AcademicTermId, cancellationToken);
+
+            classTeacherComment ??= saved?.ClassTeacherComment;
+            headComment ??= saved?.HeadComment;
+        }
+
         var model = new ReportCardModel
         {
             SchoolName = tenant?.Name ?? "School",
@@ -56,8 +69,8 @@ public class GenerateReportCardQueryHandler : IRequestHandler<GenerateReportCard
             OverallGrade = scale.GetGrade(results.OverallAverage),
             ClassRank = results.ClassRank,
             TotalInClass = results.TotalInClass,
-            ClassTeacherComment = request.ClassTeacherComment,
-            HeadComment = request.HeadComment,
+            ClassTeacherComment = classTeacherComment,
+            HeadComment = headComment,
             Subjects = results.SubjectResults
                 .Select(s => new ReportCardSubjectLine
                 {

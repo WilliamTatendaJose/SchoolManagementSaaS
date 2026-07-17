@@ -59,6 +59,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     // Assessment & Results
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<Result> Results => Set<Result>();
+    public DbSet<ReportCardComment> ReportCardComments => Set<ReportCardComment>();
 
     // Attendance
     public DbSet<Attendance> Attendances => Set<Attendance>();

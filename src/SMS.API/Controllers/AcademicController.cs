@@ -199,5 +199,36 @@ public class AcademicController : BaseApiController
         return File(result.Data!.Content, "application/pdf", result.Data.FileName);
     }
 
+    /// <summary>
+    /// Get the persisted class-teacher/head remarks for a student's report card in a term.
+    /// </summary>
+    [HttpGet("students/{studentId:guid}/report-card/comment")]
+    public async Task<IActionResult> GetReportCardComment(Guid studentId, [FromQuery] Guid termId)
+    {
+        var result = await Mediator.Send(new GetReportCardCommentQuery(studentId, termId));
+
+        if (!result.IsSuccess)
+            return BadRequest(result.Error);
+
+        return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Save the class-teacher and/or head remarks for a student's report card in a term.
+    /// </summary>
+    [HttpPut("students/{studentId:guid}/report-card/comment")]
+    public async Task<IActionResult> SaveReportCardComment(Guid studentId, [FromBody] SaveReportCardCommentCommand command)
+    {
+        if (studentId != command.StudentId)
+            return BadRequest("ID mismatch");
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
+
     #endregion
 }

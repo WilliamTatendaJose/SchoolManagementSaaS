@@ -45,6 +45,7 @@ public interface IApplicationDbContext
     // Assessment & Results
     DbSet<Assessment> Assessments { get; }
     DbSet<Result> Results { get; }
+    DbSet<ReportCardComment> ReportCardComments { get; }
     
     // Attendance
     DbSet<Attendance> Attendances { get; }
