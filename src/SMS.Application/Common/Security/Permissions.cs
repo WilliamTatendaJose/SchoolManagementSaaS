@@ -45,6 +45,10 @@ public static class Permissions
     public const string AttendanceMark = "attendance.mark";
     public const string AttendanceReport = "attendance.report";
 
+    // Discipline
+    public const string DisciplineView = "discipline.view";
+    public const string DisciplineManage = "discipline.manage";
+
     // Finance
     public const string FinanceView = "finance.view";
     public const string FeeStructuresView = "feestructures.view";

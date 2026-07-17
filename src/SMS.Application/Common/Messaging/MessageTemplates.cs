@@ -16,4 +16,7 @@ public static class MessageTemplates
 
     public static string AbsenceAlert(string studentName, DateTime date, string schoolName)
         => $"Dear Parent/Guardian, {studentName} was marked absent on {date:dd MMM yyyy}. Please contact the school if this is unexpected. - {schoolName}";
+
+    public static string DisciplineNotice(string studentName, string incidentType, DateTime date, string schoolName)
+        => $"Dear Parent/Guardian, a discipline incident ({incidentType}) was recorded for {studentName} on {date:dd MMM yyyy}. Please contact the school to discuss. - {schoolName}";
 }
