@@ -2004,6 +2004,9 @@ namespace SMS.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid?>("RouteStopId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("SpecialNeeds")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
@@ -2026,6 +2029,8 @@ namespace SMS.Infrastructure.Migrations
                     b.HasIndex("DormitoryId");
 
                     b.HasIndex("HouseId");
+
+                    b.HasIndex("RouteStopId");
 
                     b.HasIndex("TenantId", "StudentNumber")
                         .IsUnique();
@@ -2369,6 +2374,120 @@ namespace SMS.Infrastructure.Migrations
                     b.HasIndex("TeacherId");
 
                     b.ToTable("TimetableSlots");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.TransportRoute", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("DriverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VehicleRegistration")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("TransportRoutes");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.RouteStop", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan?>("DropoffTime")
+                        .HasColumnType("interval");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<TimeSpan?>("PickupTime")
+                        .HasColumnType("interval");
+
+                    b.Property<int>("SequenceNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TransportRouteId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TransportRouteId", "SequenceNumber")
+                        .IsUnique();
+
+                    b.ToTable("RouteStops");
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.User", b =>
@@ -3140,6 +3259,11 @@ namespace SMS.Infrastructure.Migrations
                         .HasForeignKey("HouseId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("SMS.Domain.Entities.RouteStop", "RouteStop")
+                        .WithMany("Students")
+                        .HasForeignKey("RouteStopId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SMS.Domain.Entities.Tenant", "Tenant")
                         .WithMany("Students")
                         .HasForeignKey("TenantId")
@@ -3151,6 +3275,8 @@ namespace SMS.Infrastructure.Migrations
                     b.Navigation("Dormitory");
 
                     b.Navigation("House");
+
+                    b.Navigation("RouteStop");
 
                     b.Navigation("Tenant");
                 });
@@ -3243,6 +3369,43 @@ namespace SMS.Infrastructure.Migrations
                     b.Navigation("Subject");
 
                     b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.TransportRoute", b =>
+                {
+                    b.HasOne("SMS.Domain.Entities.Staff", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SMS.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.RouteStop", b =>
+                {
+                    b.HasOne("SMS.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SMS.Domain.Entities.TransportRoute", "TransportRoute")
+                        .WithMany("Stops")
+                        .HasForeignKey("TransportRouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("TransportRoute");
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.User", b =>
@@ -3431,6 +3594,16 @@ namespace SMS.Infrastructure.Migrations
                     b.Navigation("Subjects");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.TransportRoute", b =>
+                {
+                    b.Navigation("Stops");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.RouteStop", b =>
+                {
+                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.User", b =>

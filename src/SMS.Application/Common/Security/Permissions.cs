@@ -53,6 +53,10 @@ public static class Permissions
     public const string HostelView = "hostel.view";
     public const string HostelManage = "hostel.manage";
 
+    // Transport
+    public const string TransportView = "transport.view";
+    public const string TransportManage = "transport.manage";
+
     // Assets
     public const string AssetsView = "assets.view";
     public const string AssetsManage = "assets.manage";

@@ -66,6 +66,10 @@ public interface IApplicationDbContext
     DbSet<Dormitory> Dormitories { get; }
     DbSet<House> Houses { get; }
     DbSet<WeekendLeave> WeekendLeaves { get; }
+
+    // Transport
+    DbSet<TransportRoute> TransportRoutes { get; }
+    DbSet<RouteStop> RouteStops { get; }
     
     // Discipline
     DbSet<DisciplineRecord> DisciplineRecords { get; }

@@ -77,6 +77,11 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
             .HasForeignKey(s => s.DormitoryId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasOne(s => s.RouteStop)
+            .WithMany(r => r.Students)
+            .HasForeignKey(s => s.RouteStopId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.Ignore(s => s.DomainEvents);
 
         // Soft-delete + tenant isolation are applied centrally in

@@ -43,6 +43,7 @@ public static class DefaultRoles
                 Permissions.UsersView, Permissions.UsersCreate, Permissions.UsersEdit, Permissions.UsersDelete, Permissions.RolesManage,
                 Permissions.SettingsView, Permissions.SettingsManage, Permissions.AuditLogsView, Permissions.TenantManage,
                 Permissions.HostelView, Permissions.HostelManage,
+                Permissions.TransportView, Permissions.TransportManage,
                 Permissions.AssetsView, Permissions.AssetsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
@@ -64,6 +65,7 @@ public static class DefaultRoles
                 Permissions.UsersView, Permissions.UsersCreate, Permissions.UsersEdit,
                 Permissions.SettingsView, Permissions.SettingsManage,
                 Permissions.HostelView, Permissions.HostelManage,
+                Permissions.TransportView, Permissions.TransportManage,
                 Permissions.AssetsView, Permissions.AssetsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
@@ -131,6 +133,13 @@ public static class DefaultRoles
             {
                 Permissions.StudentsView,
                 Permissions.HostelView, Permissions.HostelManage,
+                Permissions.MessagesView, Permissions.MessagesSend
+            },
+
+            [TransportOfficer] = new List<string>
+            {
+                Permissions.StudentsView,
+                Permissions.TransportView, Permissions.TransportManage,
                 Permissions.MessagesView, Permissions.MessagesSend
             }
         };

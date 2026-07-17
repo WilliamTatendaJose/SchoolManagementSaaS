@@ -17,7 +17,7 @@ A working document capturing product direction, feature priorities, frontend app
 
 **Still data-model only / not started:** `Stream` (class streams). New entities are needed for the deferred items below.
 
-**Known follow-ups / deferred (need new entities or infra):** transport, library, and LMS-lite modules; and the frontend (no UI yet).
+**Known follow-ups / deferred (need new entities or infra):** library and LMS-lite modules; and the frontend (no UI yet).
 
 ---
 
@@ -80,7 +80,8 @@ Every item follows the established slice pattern: entity (mostly already exists)
 ### Phase 3 — Differentiation — ✅ core complete (with noted deferrals)
 
 13. ✅ **Boarding/hostel** (`Dormitory`, `House`, `WeekendLeave`) — dormitory/house CRUD and student allocation with gender + capacity enforcement, occupancy reporting, and a weekend-leave register (request → approve/reject with guardian SMS → sign-out/sign-in). *(Boarding fees ride on fee structures.)*
-14. ✅ **Assets register** (`Asset`) and an **analytics dashboard** (student/staff/class counts, fee-collection rate, 30-day attendance rate, enrollment by class). *(Transport, library, and LMS-lite deferred — each needs new domain entities.)*
+14. ✅ **Assets register** (`Asset`) and an **analytics dashboard** (student/staff/class counts, fee-collection rate, 30-day attendance rate, enrollment by class).
+15. ✅ **Transport** (`TransportRoute`, `RouteStop`) — routes with vehicle/driver, ordered stops with pickup/dropoff times, student-to-stop assignment with route-wide (vehicle) capacity enforcement, and a `TransportOfficer` role. *(Library and LMS-lite deferred — each needs new domain entities.)*
 
 ---
 

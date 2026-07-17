@@ -81,6 +81,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<House> Houses => Set<House>();
     public DbSet<WeekendLeave> WeekendLeaves => Set<WeekendLeave>();
 
+    // Transport
+    public DbSet<TransportRoute> TransportRoutes => Set<TransportRoute>();
+    public DbSet<RouteStop> RouteStops => Set<RouteStop>();
+
     // Discipline
     public DbSet<DisciplineRecord> DisciplineRecords => Set<DisciplineRecord>();
 

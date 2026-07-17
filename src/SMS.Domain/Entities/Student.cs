@@ -32,14 +32,16 @@ public class Student : AggregateRoot
     public Guid? CurrentClassId { get; set; }
     public Guid? HouseId { get; set; }
     public Guid? DormitoryId { get; set; }
-    
+    public Guid? RouteStopId { get; set; }
+
     public string FullName => $"{FirstName} {MiddleName} {LastName}".Replace("  ", " ").Trim();
-    
+
     // Navigation properties
     public virtual Tenant Tenant { get; set; } = null!;
     public virtual Class? CurrentClass { get; set; }
     public virtual House? House { get; set; }
     public virtual Dormitory? Dormitory { get; set; }
+    public virtual RouteStop? RouteStop { get; set; }
     public virtual ICollection<StudentGuardian> Guardians { get; set; } = [];
     public virtual ICollection<Enrollment> Enrollments { get; set; } = [];
     public virtual ICollection<Attendance> Attendances { get; set; } = [];
