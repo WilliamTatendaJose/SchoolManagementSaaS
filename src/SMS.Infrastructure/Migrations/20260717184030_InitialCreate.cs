@@ -156,6 +156,37 @@ namespace SMS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Books",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Author = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Isbn = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Category = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    TotalCopies = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Books", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Books_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Classrooms",
                 columns: table => new
                 {
@@ -655,6 +686,42 @@ namespace SMS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TransportRoutes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    VehicleRegistration = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    DriverId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Capacity = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransportRoutes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TransportRoutes_Staff_DriverId",
+                        column: x => x.DriverId,
+                        principalTable: "Staff",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_TransportRoutes_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Assessments",
                 columns: table => new
                 {
@@ -697,6 +764,58 @@ namespace SMS.Infrastructure.Migrations
                         name: "FK_Assessments_Subjects_SubjectId",
                         column: x => x.SubjectId,
                         principalTable: "Subjects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Assignments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClassId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SubjectId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AcademicTermId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    AttachmentKey = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    AttachmentFileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    IsPublished = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Assignments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Assignments_AcademicTerms_AcademicTermId",
+                        column: x => x.AcademicTermId,
+                        principalTable: "AcademicTerms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Assignments_Classes_ClassId",
+                        column: x => x.ClassId,
+                        principalTable: "Classes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Assignments_Subjects_SubjectId",
+                        column: x => x.SubjectId,
+                        principalTable: "Subjects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Assignments_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -908,6 +1027,42 @@ namespace SMS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RouteStops",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TransportRouteId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    SequenceNumber = table.Column<int>(type: "integer", nullable: false),
+                    PickupTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    DropoffTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RouteStops", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RouteStops_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RouteStops_TransportRoutes_TransportRouteId",
+                        column: x => x.TransportRouteId,
+                        principalTable: "TransportRoutes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Students",
                 columns: table => new
                 {
@@ -934,6 +1089,7 @@ namespace SMS.Infrastructure.Migrations
                     CurrentClassId = table.Column<Guid>(type: "uuid", nullable: true),
                     HouseId = table.Column<Guid>(type: "uuid", nullable: true),
                     DormitoryId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RouteStopId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -965,11 +1121,63 @@ namespace SMS.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
+                        name: "FK_Students_RouteStops_RouteStopId",
+                        column: x => x.RouteStopId,
+                        principalTable: "RouteStops",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
                         name: "FK_Students_Tenants_TenantId",
                         column: x => x.TenantId,
                         principalTable: "Tenants",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AssignmentSubmissions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    AssignmentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SubmittedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Comment = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    AttachmentKey = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    AttachmentFileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    Grade = table.Column<decimal>(type: "numeric(5,2)", precision: 5, scale: 2, nullable: true),
+                    Feedback = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AssignmentSubmissions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AssignmentSubmissions_Assignments_AssignmentId",
+                        column: x => x.AssignmentId,
+                        principalTable: "Assignments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AssignmentSubmissions_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AssignmentSubmissions_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1027,6 +1235,49 @@ namespace SMS.Infrastructure.Migrations
                         column: x => x.TimetableSlotId,
                         principalTable: "TimetableSlots",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BookLoans",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    BookId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BorrowedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ReturnedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BookLoans", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BookLoans_Books_BookId",
+                        column: x => x.BookId,
+                        principalTable: "Books",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_BookLoans_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BookLoans_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1131,6 +1382,7 @@ namespace SMS.Infrastructure.Migrations
                     TotalAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     DiscountAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     PaidAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
@@ -1200,6 +1452,47 @@ namespace SMS.Infrastructure.Migrations
                         column: x => x.StudentId,
                         principalTable: "Students",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReportCardComments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AcademicTermId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClassTeacherComment = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    HeadComment = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReportCardComments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReportCardComments_AcademicTerms_AcademicTermId",
+                        column: x => x.AcademicTermId,
+                        principalTable: "AcademicTerms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReportCardComments_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReportCardComments_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1284,6 +1577,55 @@ namespace SMS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WeekendLeaves",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DepartureDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ExpectedReturnDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Destination = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Reason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ReviewNote = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    AuthorizedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    CollectedBy = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    ActualDepartureAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ActualReturnAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    GuardianNotified = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WeekendLeaves", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WeekendLeaves_Staff_AuthorizedById",
+                        column: x => x.AuthorizedById,
+                        principalTable: "Staff",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_WeekendLeaves_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WeekendLeaves_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "InvoiceItems",
                 columns: table => new
                 {
@@ -1319,6 +1661,41 @@ namespace SMS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PaymentPlans",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InstallmentCount = table.Column<int>(type: "integer", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentPlans", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PaymentPlans_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PaymentPlans_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Payments",
                 columns: table => new
                 {
@@ -1326,6 +1703,8 @@ namespace SMS.Infrastructure.Migrations
                     ReceiptNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
                     Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    ExchangeRate = table.Column<decimal>(type: "numeric(18,6)", precision: 18, scale: 6, nullable: false),
                     PaymentMethod = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     PaymentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -1334,6 +1713,7 @@ namespace SMS.Infrastructure.Migrations
                     BankName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ReceivedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    GatewayPollUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -1358,6 +1738,43 @@ namespace SMS.Infrastructure.Migrations
                         principalTable: "Staff",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Installments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PaymentPlanId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SequenceNumber = table.Column<int>(type: "integer", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    IsPaid = table.Column<bool>(type: "boolean", nullable: false),
+                    PaidDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Installments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Installments_PaymentPlans_PaymentPlanId",
+                        column: x => x.PaymentPlanId,
+                        principalTable: "PaymentPlans",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Installments_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -1396,6 +1813,42 @@ namespace SMS.Infrastructure.Migrations
                 column: "TenantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Assignments_AcademicTermId",
+                table: "Assignments",
+                column: "AcademicTermId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Assignments_ClassId",
+                table: "Assignments",
+                column: "ClassId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Assignments_SubjectId",
+                table: "Assignments",
+                column: "SubjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Assignments_TenantId",
+                table: "Assignments",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AssignmentSubmissions_AssignmentId_StudentId",
+                table: "AssignmentSubmissions",
+                columns: new[] { "AssignmentId", "StudentId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AssignmentSubmissions_StudentId",
+                table: "AssignmentSubmissions",
+                column: "StudentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AssignmentSubmissions_TenantId",
+                table: "AssignmentSubmissions",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Attendances_ClassId",
                 table: "Attendances",
                 column: "ClassId");
@@ -1424,6 +1877,26 @@ namespace SMS.Infrastructure.Migrations
                 name: "IX_AuditLogs_UserId",
                 table: "AuditLogs",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookLoans_BookId",
+                table: "BookLoans",
+                column: "BookId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookLoans_StudentId",
+                table: "BookLoans",
+                column: "StudentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookLoans_TenantId",
+                table: "BookLoans",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Books_TenantId",
+                table: "Books",
+                column: "TenantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Classes_ClassroomId",
@@ -1532,6 +2005,17 @@ namespace SMS.Infrastructure.Migrations
                 column: "TenantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Installments_PaymentPlanId_SequenceNumber",
+                table: "Installments",
+                columns: new[] { "PaymentPlanId", "SequenceNumber" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Installments_TenantId",
+                table: "Installments",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InvoiceItems_FeeStructureId",
                 table: "InvoiceItems",
                 column: "FeeStructureId");
@@ -1593,6 +2077,16 @@ namespace SMS.Infrastructure.Migrations
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PaymentPlans_InvoiceId",
+                table: "PaymentPlans",
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentPlans_TenantId",
+                table: "PaymentPlans",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payments_InvoiceId",
                 table: "Payments",
                 column: "InvoiceId");
@@ -1607,6 +2101,22 @@ namespace SMS.Infrastructure.Migrations
                 table: "Payments",
                 columns: new[] { "TenantId", "ReceiptNumber" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportCardComments_AcademicTermId",
+                table: "ReportCardComments",
+                column: "AcademicTermId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportCardComments_StudentId_AcademicTermId",
+                table: "ReportCardComments",
+                columns: new[] { "StudentId", "AcademicTermId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReportCardComments_TenantId",
+                table: "ReportCardComments",
+                column: "TenantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Results_AssessmentId",
@@ -1632,6 +2142,17 @@ namespace SMS.Infrastructure.Migrations
                 name: "IX_RolePermissions_RoleId",
                 table: "RolePermissions",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RouteStops_TenantId",
+                table: "RouteStops",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RouteStops_TransportRouteId_SequenceNumber",
+                table: "RouteStops",
+                columns: new[] { "TransportRouteId", "SequenceNumber" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Staff_TenantId",
@@ -1673,6 +2194,11 @@ namespace SMS.Infrastructure.Migrations
                 name: "IX_Students_HouseId",
                 table: "Students",
                 column: "HouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Students_RouteStopId",
+                table: "Students",
+                column: "RouteStopId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Students_TenantId_StudentNumber",
@@ -1727,6 +2253,16 @@ namespace SMS.Infrastructure.Migrations
                 column: "TeacherId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TransportRoutes_DriverId",
+                table: "TransportRoutes",
+                column: "DriverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransportRoutes_TenantId",
+                table: "TransportRoutes",
+                column: "TenantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_RoleId",
                 table: "UserRoles",
                 column: "RoleId");
@@ -1741,6 +2277,21 @@ namespace SMS.Infrastructure.Migrations
                 table: "Users",
                 columns: new[] { "TenantId", "Email" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WeekendLeaves_AuthorizedById",
+                table: "WeekendLeaves",
+                column: "AuthorizedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WeekendLeaves_StudentId_DepartureDate",
+                table: "WeekendLeaves",
+                columns: new[] { "StudentId", "DepartureDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WeekendLeaves_TenantId",
+                table: "WeekendLeaves",
+                column: "TenantId");
         }
 
         /// <inheritdoc />
@@ -1750,10 +2301,16 @@ namespace SMS.Infrastructure.Migrations
                 name: "Assets");
 
             migrationBuilder.DropTable(
+                name: "AssignmentSubmissions");
+
+            migrationBuilder.DropTable(
                 name: "Attendances");
 
             migrationBuilder.DropTable(
                 name: "AuditLogs");
+
+            migrationBuilder.DropTable(
+                name: "BookLoans");
 
             migrationBuilder.DropTable(
                 name: "ClassSubjects");
@@ -1763,6 +2320,9 @@ namespace SMS.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Enrollments");
+
+            migrationBuilder.DropTable(
+                name: "Installments");
 
             migrationBuilder.DropTable(
                 name: "InvoiceItems");
@@ -1775,6 +2335,9 @@ namespace SMS.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Payments");
+
+            migrationBuilder.DropTable(
+                name: "ReportCardComments");
 
             migrationBuilder.DropTable(
                 name: "Results");
@@ -1792,19 +2355,28 @@ namespace SMS.Infrastructure.Migrations
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
+                name: "WeekendLeaves");
+
+            migrationBuilder.DropTable(
+                name: "Assignments");
+
+            migrationBuilder.DropTable(
                 name: "TimetableSlots");
 
             migrationBuilder.DropTable(
+                name: "Books");
+
+            migrationBuilder.DropTable(
                 name: "Streams");
+
+            migrationBuilder.DropTable(
+                name: "PaymentPlans");
 
             migrationBuilder.DropTable(
                 name: "FeeStructures");
 
             migrationBuilder.DropTable(
                 name: "Messages");
-
-            migrationBuilder.DropTable(
-                name: "Invoices");
 
             migrationBuilder.DropTable(
                 name: "Assessments");
@@ -1819,13 +2391,19 @@ namespace SMS.Infrastructure.Migrations
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Students");
+                name: "Invoices");
+
+            migrationBuilder.DropTable(
+                name: "Subjects");
 
             migrationBuilder.DropTable(
                 name: "AcademicTerms");
 
             migrationBuilder.DropTable(
-                name: "Subjects");
+                name: "Students");
+
+            migrationBuilder.DropTable(
+                name: "AcademicYears");
 
             migrationBuilder.DropTable(
                 name: "Classes");
@@ -1837,10 +2415,13 @@ namespace SMS.Infrastructure.Migrations
                 name: "Houses");
 
             migrationBuilder.DropTable(
-                name: "AcademicYears");
+                name: "RouteStops");
 
             migrationBuilder.DropTable(
                 name: "Classrooms");
+
+            migrationBuilder.DropTable(
+                name: "TransportRoutes");
 
             migrationBuilder.DropTable(
                 name: "Staff");

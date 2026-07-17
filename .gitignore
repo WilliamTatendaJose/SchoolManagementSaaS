@@ -53,9 +53,6 @@ _NCrunch_*
 # Publish
 publish/
 
-# Entity Framework migrations
-**/Migrations/*.Designer.cs
-
 # User secrets
 secrets.json
 

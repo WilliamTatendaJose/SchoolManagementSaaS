@@ -76,6 +76,18 @@ public static class DatabaseSeeder
             new() { Name = "View Hostel", Code = Permissions.HostelView, Module = "Hostel", Description = "View dormitories, houses and occupancy" },
             new() { Name = "Manage Hostel", Code = Permissions.HostelManage, Module = "Hostel", Description = "Manage dormitories/houses and student allocation" },
 
+            // Transport
+            new() { Name = "View Transport", Code = Permissions.TransportView, Module = "Transport", Description = "View bus routes, stops and student allocation" },
+            new() { Name = "Manage Transport", Code = Permissions.TransportManage, Module = "Transport", Description = "Manage bus routes/stops and student allocation" },
+
+            // Library
+            new() { Name = "View Library", Code = Permissions.LibraryView, Module = "Library", Description = "View the book catalog and loans" },
+            new() { Name = "Manage Library", Code = Permissions.LibraryManage, Module = "Library", Description = "Manage books and borrow/return" },
+
+            // LMS-lite
+            new() { Name = "View Assignments", Code = Permissions.AssignmentsView, Module = "Lms", Description = "View assignments and submissions" },
+            new() { Name = "Manage Assignments", Code = Permissions.AssignmentsManage, Module = "Lms", Description = "Create assignments, record submissions and grade them" },
+
             // Assets
             new() { Name = "View Assets", Code = Permissions.AssetsView, Module = "Assets", Description = "View the asset register" },
             new() { Name = "Manage Assets", Code = Permissions.AssetsManage, Module = "Assets", Description = "Add and update assets" },
