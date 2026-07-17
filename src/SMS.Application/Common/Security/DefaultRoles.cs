@@ -43,6 +43,7 @@ public static class DefaultRoles
                 Permissions.UsersView, Permissions.UsersCreate, Permissions.UsersEdit, Permissions.UsersDelete, Permissions.RolesManage,
                 Permissions.SettingsView, Permissions.SettingsManage, Permissions.AuditLogsView, Permissions.TenantManage,
                 Permissions.HostelView, Permissions.HostelManage,
+                Permissions.AssetsView, Permissions.AssetsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
 
@@ -63,6 +64,7 @@ public static class DefaultRoles
                 Permissions.UsersView, Permissions.UsersCreate, Permissions.UsersEdit,
                 Permissions.SettingsView, Permissions.SettingsManage,
                 Permissions.HostelView, Permissions.HostelManage,
+                Permissions.AssetsView, Permissions.AssetsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
 
