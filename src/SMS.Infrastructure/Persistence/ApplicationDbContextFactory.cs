@@ -51,4 +51,6 @@ internal class DesignTimeCurrentUserService : ICurrentUserService
     public Guid? TenantId => null;
     public bool IsAuthenticated => false;
     public IEnumerable<string> Roles => [];
+    public string? IpAddress => null;
+    public string? UserAgent => null;
 }

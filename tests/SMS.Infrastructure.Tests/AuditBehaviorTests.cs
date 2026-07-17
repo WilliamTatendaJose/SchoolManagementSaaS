@@ -52,6 +52,9 @@ public class AuditBehaviorTests : IAsyncLifetime
     [Fact]
     public async Task Successful_command_writes_a_redacted_audit_log()
     {
+        _harness.CurrentUser.IpAddress = "10.1.2.3";
+        _harness.CurrentUser.UserAgent = "IntegrationTests/1.0";
+
         await using var db = _harness.CreateDbContext();
         var behavior = new AuditBehavior<CreateWidgetCommand, Result<Guid>>(db, _harness.CurrentUser);
 
@@ -66,6 +69,8 @@ public class AuditBehaviorTests : IAsyncLifetime
         log.UserId.Should().Be(_harness.CurrentUser.UserId);
         log.NewValues.Should().Contain("Chalk");
         log.NewValues.Should().Contain("***").And.NotContain("super-secret", "password fields must be redacted");
+        log.IpAddress.Should().Be("10.1.2.3");
+        log.UserAgent.Should().Be("IntegrationTests/1.0");
     }
 
     [Fact]

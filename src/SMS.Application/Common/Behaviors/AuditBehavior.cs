@@ -49,6 +49,8 @@ public partial class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
                 Action = action,
                 EntityType = entityType,
                 NewValues = SerializeRedacted(request),
+                IpAddress = _currentUser.IpAddress,
+                UserAgent = _currentUser.UserAgent,
                 Timestamp = DateTime.UtcNow
             });
             await _context.SaveChangesAsync(cancellationToken);

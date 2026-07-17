@@ -16,6 +16,8 @@ internal sealed class TestCurrentUserService : ICurrentUserService
     public Guid? TenantId { get; set; }
     public IEnumerable<string> Roles { get; set; } = [];
     public bool IsAuthenticated => UserId.HasValue;
+    public string? IpAddress { get; set; }
+    public string? UserAgent { get; set; }
 }
 
 /// <summary>

@@ -10,4 +10,10 @@ public interface ICurrentUserService
     Guid? TenantId { get; }
     IEnumerable<string> Roles { get; }
     bool IsAuthenticated { get; }
+
+    /// <summary>Source IP of the current request, when available.</summary>
+    string? IpAddress { get; }
+
+    /// <summary>User-Agent of the current request, when available.</summary>
+    string? UserAgent { get; }
 }
