@@ -22,6 +22,9 @@ public record SendMessageCommand : IRequest<Result<MessageDispatchResultDto>>
     public MessageAudience Audience { get; init; }
     public List<Guid>? StudentIds { get; init; }
     public Guid? ClassId { get; init; }
+
+    /// <summary>When set to a future time, the message is queued and sent by the outbox processor.</summary>
+    public DateTime? ScheduledAt { get; init; }
 }
 
 public record MessageDispatchResultDto

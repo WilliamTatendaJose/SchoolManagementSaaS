@@ -54,4 +54,60 @@ internal static class MessageDispatcher
         message.SentAt = DateTime.UtcNow;
         message.Status = MessageStatuses.Sent;
     }
+
+    /// <summary>
+    /// Records the recipients as Pending without sending — used to queue a message for later
+    /// dispatch by the outbox processor. The stored Message.Content is what will be sent.
+    /// </summary>
+    public static void Materialize(
+        Message message,
+        IReadOnlyList<ResolvedRecipient> recipients)
+    {
+        message.TotalRecipients = recipients.Count;
+        message.Status = MessageStatuses.Queued;
+
+        foreach (var recipient in recipients)
+        {
+            message.Recipients.Add(new MessageRecipient
+            {
+                RecipientPhone = recipient.Phone,
+                RecipientName = recipient.Name,
+                StudentId = recipient.StudentId,
+                GuardianId = recipient.GuardianId,
+                Status = RecipientStatuses.Pending
+            });
+        }
+    }
+
+    /// <summary>
+    /// Dispatches a queued message's Pending recipients (sending Message.Content to each) and
+    /// finalizes the counts/status. Safe to retry: only Pending recipients are (re)sent.
+    /// </summary>
+    public static async Task DispatchPendingAsync(
+        IMessageChannel channel,
+        Message message,
+        CancellationToken cancellationToken)
+    {
+        message.Status = MessageStatuses.Sending;
+
+        foreach (var recipient in message.Recipients.Where(r => r.Status == RecipientStatuses.Pending))
+        {
+            var result = await channel.SendAsync(recipient.RecipientPhone, message.Content, cancellationToken);
+            if (result.Success)
+            {
+                recipient.Status = RecipientStatuses.Delivered;
+                recipient.DeliveredAt = DateTime.UtcNow;
+            }
+            else
+            {
+                recipient.Status = RecipientStatuses.Failed;
+                recipient.FailureReason = result.FailureReason;
+            }
+        }
+
+        message.DeliveredCount = message.Recipients.Count(r => r.Status == RecipientStatuses.Delivered);
+        message.FailedCount = message.Recipients.Count(r => r.Status == RecipientStatuses.Failed);
+        message.SentAt = DateTime.UtcNow;
+        message.Status = MessageStatuses.Sent;
+    }
 }

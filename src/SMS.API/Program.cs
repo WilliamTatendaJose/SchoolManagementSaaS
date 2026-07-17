@@ -22,6 +22,9 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApiServices(builder.Configuration);
 
+// Background dispatch of queued/scheduled messages.
+builder.Services.AddHostedService<SMS.API.BackgroundServices.MessageOutboxProcessor>();
+
 var app = builder.Build();
 
 // Seed database

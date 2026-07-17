@@ -57,13 +57,22 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Res
             Channel = request.Channel,
             RecipientType = request.Audience.ToString(),
             ClassId = request.Audience == MessageAudience.Class ? request.ClassId : null,
+            ScheduledAt = request.ScheduledAt,
             CreatedByUserId = userId,
             Status = MessageStatuses.Draft
         };
         _context.Messages.Add(message);
 
-        var targets = recipients.Select(r => (r, request.Content)).ToList();
-        await MessageDispatcher.DispatchAsync(channel, message, targets, cancellationToken);
+        // Future-dated messages are queued for the outbox processor; others send now.
+        if (request.ScheduledAt is { } scheduledAt && scheduledAt > DateTime.UtcNow)
+        {
+            MessageDispatcher.Materialize(message, recipients);
+        }
+        else
+        {
+            var targets = recipients.Select(r => (r, request.Content)).ToList();
+            await MessageDispatcher.DispatchAsync(channel, message, targets, cancellationToken);
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
 

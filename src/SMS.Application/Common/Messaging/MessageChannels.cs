@@ -11,6 +11,7 @@ public static class MessageChannels
 public static class MessageStatuses
 {
     public const string Draft = "Draft";
+    public const string Queued = "Queued";
     public const string Sending = "Sending";
     public const string Sent = "Sent";
     public const string Failed = "Failed";
