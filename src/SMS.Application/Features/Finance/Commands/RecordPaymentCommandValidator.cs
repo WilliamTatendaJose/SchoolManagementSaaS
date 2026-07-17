@@ -18,5 +18,9 @@ public class RecordPaymentCommandValidator : AbstractValidator<RecordPaymentComm
             .NotEmpty().WithMessage("Payment method is required")
             .Must(m => ValidMethods.Contains(m))
             .WithMessage("Payment method must be Cash, MobileMoney, BankTransfer, Card, or Cheque");
+
+        RuleFor(x => x.ExchangeRate)
+            .GreaterThan(0).When(x => x.ExchangeRate.HasValue)
+            .WithMessage("Exchange rate must be greater than zero");
     }
 }

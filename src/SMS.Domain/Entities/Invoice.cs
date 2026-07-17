@@ -17,6 +17,10 @@ public class Invoice : AggregateRoot
     public decimal DiscountAmount { get; set; }
     public decimal PaidAmount { get; set; }
     public decimal Balance => TotalAmount - DiscountAmount - PaidAmount;
+
+    /// <summary>Currency the invoice is billed in (e.g. USD, ZWG). Amounts above are in this currency.</summary>
+    public string Currency { get; set; } = "USD";
+
     public string? Notes { get; set; }
     public bool IsPaid => Balance <= 0;
     

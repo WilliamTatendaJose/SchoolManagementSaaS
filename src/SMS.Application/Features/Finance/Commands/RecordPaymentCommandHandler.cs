@@ -36,11 +36,19 @@ public class RecordPaymentCommandHandler : IRequestHandler<RecordPaymentCommand,
 
         var receiptNumber = await GenerateReceiptNumberAsync(cancellationToken);
 
+        // ReceivedById references a Staff record, so resolve the current user's staff id.
+        var receivedByStaffId = await _context.Staff
+            .Where(s => s.UserId == _currentUserService.UserId)
+            .Select(s => (Guid?)s.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
         var payment = new Payment
         {
             ReceiptNumber = receiptNumber,
             InvoiceId = request.InvoiceId,
             Amount = request.Amount,
+            Currency = request.Currency ?? invoice.Currency,
+            ExchangeRate = request.ExchangeRate ?? 1m,
             PaymentMethod = Enum.Parse<PaymentMethod>(request.PaymentMethod),
             Status = PaymentStatus.Completed,
             PaymentDate = request.PaymentDate ?? DateTime.UtcNow,
@@ -48,14 +56,14 @@ public class RecordPaymentCommandHandler : IRequestHandler<RecordPaymentCommand,
             MobileMoneyNumber = request.MobileMoneyNumber,
             BankName = request.BankName,
             Notes = request.Notes,
-            ReceivedById = _currentUserService.UserId
+            ReceivedById = receivedByStaffId
         };
 
         _context.Payments.Add(payment);
-        
-        // Update invoice paid amount
-        invoice.PaidAmount += request.Amount;
-        
+
+        // Credit the invoice in its own currency.
+        invoice.PaidAmount += payment.AmountInInvoiceCurrency;
+
         await _context.SaveChangesAsync(cancellationToken);
 
         var remainingBalance = invoice.TotalAmount - invoice.DiscountAmount - invoice.PaidAmount;

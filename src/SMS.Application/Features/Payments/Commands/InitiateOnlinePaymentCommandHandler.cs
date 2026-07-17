@@ -54,6 +54,8 @@ public class InitiateOnlinePaymentCommandHandler : IRequestHandler<InitiateOnlin
             ReceiptNumber = reference,
             InvoiceId = invoice.Id,
             Amount = amount,
+            Currency = invoice.Currency,
+            ExchangeRate = 1m,
             PaymentMethod = PaymentMethod.MobileMoney,
             Status = PaymentStatus.Pending,
             PaymentDate = DateTime.UtcNow,

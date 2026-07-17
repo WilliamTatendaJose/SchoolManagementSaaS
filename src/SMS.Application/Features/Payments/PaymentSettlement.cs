@@ -30,7 +30,7 @@ internal static class PaymentSettlement
                 payment.Notes = $"Gateway reference: {status.GatewayReference}";
             }
 
-            invoice.PaidAmount += payment.Amount;
+            invoice.PaidAmount += payment.AmountInInvoiceCurrency;
             return true;
         }
 

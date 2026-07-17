@@ -46,7 +46,7 @@ public class GenerateReceiptQueryHandler : IRequestHandler<GenerateReceiptQuery,
             StudentNumber = invoice.Student.StudentNumber,
             InvoiceNumber = invoice.InvoiceNumber,
             Amount = payment.Amount,
-            Currency = tenant?.Currency ?? "USD",
+            Currency = payment.Currency,
             PaymentMethod = payment.PaymentMethod.ToString(),
             PaymentDate = payment.PaymentDate,
             RemainingBalance = balance

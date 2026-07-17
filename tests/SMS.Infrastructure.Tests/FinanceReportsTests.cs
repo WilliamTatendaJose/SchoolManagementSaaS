@@ -89,10 +89,11 @@ public class FinanceReportsTests : IAsyncLifetime
             .Handle(new GetCashierReconciliationQuery { FromDate = new DateTime(2026, 3, 1), ToDate = new DateTime(2026, 3, 31) }, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Data!.TotalCollected.Should().Be(100m, "only the two completed in-range payments count (60 + 40)");
-        result.Data.PaymentCount.Should().Be(2);
-        result.Data.ByMethod.Should().Contain(m => m.PaymentMethod == "Cash" && m.Amount == 60m);
-        result.Data.ByMethod.Should().Contain(m => m.PaymentMethod == "MobileMoney" && m.Amount == 40m);
+        result.Data!.PaymentCount.Should().Be(2, "only the two completed in-range payments count");
+        var usd = result.Data.ByCurrency.Should().ContainSingle(c => c.Currency == "USD").Subject;
+        usd.TotalCollected.Should().Be(100m, "60 + 40");
+        usd.ByMethod.Should().Contain(m => m.PaymentMethod == "Cash" && m.Amount == 60m);
+        usd.ByMethod.Should().Contain(m => m.PaymentMethod == "MobileMoney" && m.Amount == 40m);
     }
 
     private static Student NewStudent(string number, string first) => new()

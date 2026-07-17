@@ -4,8 +4,8 @@ using SMS.Application.Common.Models;
 namespace SMS.Application.Features.Finance.Queries;
 
 /// <summary>
-/// Summarizes completed payments over a date range, grouped by payment method — a daily
-/// cashier reconciliation.
+/// Summarizes completed payments over a date range, grouped by currency then payment
+/// method — a daily cashier reconciliation that keeps currencies separate.
 /// </summary>
 public record GetCashierReconciliationQuery : IRequest<Result<ReconciliationDto>>
 {
@@ -17,8 +17,15 @@ public record ReconciliationDto
 {
     public DateTime FromDate { get; init; }
     public DateTime ToDate { get; init; }
-    public decimal TotalCollected { get; init; }
     public int PaymentCount { get; init; }
+    public List<CurrencyReconciliationDto> ByCurrency { get; init; } = [];
+}
+
+public record CurrencyReconciliationDto
+{
+    public string Currency { get; init; } = string.Empty;
+    public decimal TotalCollected { get; init; }
+    public int Count { get; init; }
     public List<MethodBreakdownDto> ByMethod { get; init; } = [];
 }
 

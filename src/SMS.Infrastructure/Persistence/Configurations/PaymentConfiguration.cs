@@ -22,6 +22,15 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Amount)
             .HasPrecision(18, 2);
 
+        builder.Property(p => p.Currency)
+            .HasMaxLength(10)
+            .IsRequired();
+
+        builder.Property(p => p.ExchangeRate)
+            .HasPrecision(18, 6);
+
+        builder.Ignore(p => p.AmountInInvoiceCurrency);
+
         builder.Property(p => p.TransactionReference)
             .HasMaxLength(100);
 

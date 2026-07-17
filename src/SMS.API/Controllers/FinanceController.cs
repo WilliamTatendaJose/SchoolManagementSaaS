@@ -65,7 +65,8 @@ public class FinanceController : BaseApiController
                 TotalAmount = i.TotalAmount,
                 DiscountAmount = i.DiscountAmount,
                 PaidAmount = i.PaidAmount,
-                Balance = i.TotalAmount - i.DiscountAmount - i.PaidAmount
+                Balance = i.TotalAmount - i.DiscountAmount - i.PaidAmount,
+                Currency = i.Currency
             })
             .ToListAsync();
 
@@ -109,6 +110,7 @@ public class FinanceController : BaseApiController
             DueDate = request.DueDate,
             TotalAmount = request.Items.Sum(i => i.Amount * i.Quantity),
             DiscountAmount = request.DiscountAmount ?? 0,
+            Currency = string.IsNullOrWhiteSpace(request.Currency) ? "USD" : request.Currency,
             Notes = request.Notes
         };
 
@@ -147,6 +149,8 @@ public class FinanceController : BaseApiController
             ReceiptNumber = receiptNumber,
             InvoiceId = request.InvoiceId,
             Amount = request.Amount,
+            Currency = string.IsNullOrWhiteSpace(request.Currency) ? invoice.Currency : request.Currency,
+            ExchangeRate = request.ExchangeRate ?? 1m,
             PaymentMethod = Enum.Parse<PaymentMethod>(request.PaymentMethod),
             Status = PaymentStatus.Completed,
             PaymentDate = request.PaymentDate ?? DateTime.UtcNow,
@@ -157,10 +161,10 @@ public class FinanceController : BaseApiController
         };
 
         _context.Payments.Add(payment);
-        
-        // Update invoice paid amount
-        invoice.PaidAmount += request.Amount;
-        
+
+        // Credit the invoice in its own currency.
+        invoice.PaidAmount += payment.AmountInInvoiceCurrency;
+
         await _context.SaveChangesAsync();
 
         return Ok(new { ReceiptNumber = receiptNumber, PaymentId = payment.Id });
@@ -277,6 +281,7 @@ public record InvoiceDto
     public decimal DiscountAmount { get; init; }
     public decimal PaidAmount { get; init; }
     public decimal Balance { get; init; }
+    public string Currency { get; init; } = "USD";
 }
 
 public record CreateInvoiceRequest
@@ -285,6 +290,7 @@ public record CreateInvoiceRequest
     public Guid AcademicTermId { get; init; }
     public DateTime DueDate { get; init; }
     public decimal? DiscountAmount { get; init; }
+    public string? Currency { get; init; }
     public string? Notes { get; init; }
     public List<InvoiceItemRequest> Items { get; init; } = [];
 }
@@ -301,6 +307,8 @@ public record RecordPaymentRequest
 {
     public Guid InvoiceId { get; init; }
     public decimal Amount { get; init; }
+    public string? Currency { get; init; }
+    public decimal? ExchangeRate { get; init; }
     public string PaymentMethod { get; init; } = string.Empty;
     public DateTime? PaymentDate { get; init; }
     public string? TransactionReference { get; init; }

@@ -25,6 +25,11 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
             return Result<InvoiceGenerationResultDto>.Failure("Academic term not found");
         }
 
+        var currency = await _context.Tenants
+            .Where(t => t.Id == term.TenantId)
+            .Select(t => t.Currency)
+            .FirstOrDefaultAsync(cancellationToken) ?? "USD";
+
         // Active enrollments in the term's academic year, optionally scoped to one class
         var enrollmentQuery = _context.Enrollments
             .Where(e => e.IsActive && e.AcademicYearId == term.AcademicYearId);
@@ -121,7 +126,8 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
                 InvoiceDate = DateTime.UtcNow,
                 DueDate = request.DueDate,
                 TotalAmount = feeSubtotal + arrears,
-                DiscountAmount = discount
+                DiscountAmount = discount,
+                Currency = currency
             };
 
             foreach (var fee in fees)

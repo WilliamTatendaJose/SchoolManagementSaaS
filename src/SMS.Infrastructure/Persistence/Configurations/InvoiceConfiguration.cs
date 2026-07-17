@@ -28,6 +28,10 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(i => i.PaidAmount)
             .HasPrecision(18, 2);
 
+        builder.Property(i => i.Currency)
+            .HasMaxLength(10)
+            .IsRequired();
+
         builder.Property(i => i.Notes)
             .HasMaxLength(1000);
 

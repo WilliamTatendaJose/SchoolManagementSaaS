@@ -28,27 +28,36 @@ public class GetCashierReconciliationQueryHandler : IRequestHandler<GetCashierRe
         var payments = await _context.Payments
             .AsNoTracking()
             .Where(p => p.Status == PaymentStatus.Completed && p.PaymentDate >= from && p.PaymentDate <= to)
-            .Select(p => new { p.PaymentMethod, p.Amount })
+            .Select(p => new { p.Currency, p.PaymentMethod, p.Amount })
             .ToListAsync(cancellationToken);
 
-        var byMethod = payments
-            .GroupBy(p => p.PaymentMethod)
-            .Select(g => new MethodBreakdownDto
+        var byCurrency = payments
+            .GroupBy(p => p.Currency)
+            .Select(currencyGroup => new CurrencyReconciliationDto
             {
-                PaymentMethod = g.Key.ToString(),
-                Count = g.Count(),
-                Amount = g.Sum(x => x.Amount)
+                Currency = currencyGroup.Key,
+                TotalCollected = currencyGroup.Sum(x => x.Amount),
+                Count = currencyGroup.Count(),
+                ByMethod = currencyGroup
+                    .GroupBy(p => p.PaymentMethod)
+                    .Select(methodGroup => new MethodBreakdownDto
+                    {
+                        PaymentMethod = methodGroup.Key.ToString(),
+                        Count = methodGroup.Count(),
+                        Amount = methodGroup.Sum(x => x.Amount)
+                    })
+                    .OrderByDescending(m => m.Amount)
+                    .ToList()
             })
-            .OrderByDescending(m => m.Amount)
+            .OrderBy(c => c.Currency)
             .ToList();
 
         var dto = new ReconciliationDto
         {
             FromDate = from,
             ToDate = request.ToDate.Date,
-            TotalCollected = payments.Sum(p => p.Amount),
             PaymentCount = payments.Count,
-            ByMethod = byMethod
+            ByCurrency = byCurrency
         };
 
         return Result<ReconciliationDto>.Success(dto);

@@ -7,6 +7,13 @@ public record RecordPaymentCommand : IRequest<Result<PaymentResultDto>>
 {
     public Guid InvoiceId { get; init; }
     public decimal Amount { get; init; }
+
+    /// <summary>Currency tendered; defaults to the invoice currency.</summary>
+    public string? Currency { get; init; }
+
+    /// <summary>Rate converting the tendered currency to the invoice currency; defaults to 1.</summary>
+    public decimal? ExchangeRate { get; init; }
+
     public string PaymentMethod { get; init; } = string.Empty;
     public DateTime? PaymentDate { get; init; }
     public string? TransactionReference { get; init; }
