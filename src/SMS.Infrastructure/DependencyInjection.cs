@@ -9,6 +9,7 @@ using SMS.Application.Interfaces;
 using SMS.Infrastructure.Authorization;
 using SMS.Infrastructure.Persistence;
 using SMS.Infrastructure.Services;
+using SMS.Infrastructure.Services.Messaging;
 using SMS.Infrastructure.Services.Payments;
 using System.Text;
 
@@ -30,8 +31,14 @@ public static class DependencyInjection
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
-        services.AddScoped<ISmsService, SmsService>();
         services.AddScoped<IFileStorageService, S3FileStorageService>();
+
+        // Messaging (SMS + WhatsApp channels)
+        services.Configure<SmsOptions>(configuration.GetSection(SmsOptions.SectionName));
+        services.Configure<WhatsAppOptions>(configuration.GetSection(WhatsAppOptions.SectionName));
+        services.AddHttpClient<ISmsService, SmsService>();
+        services.AddScoped<IMessageChannel, SmsChannel>();
+        services.AddHttpClient<IMessageChannel, WhatsAppChannel>();
 
         // Payment gateway (Paynow)
         services.Configure<PaynowOptions>(configuration.GetSection(PaynowOptions.SectionName));
