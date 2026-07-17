@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IFileStorageService, S3FileStorageService>();
         services.AddScoped<IReportCardGenerator, ReportCardPdfGenerator>();
+        services.AddScoped<IReceiptGenerator, ReceiptPdfGenerator>();
 
         // Messaging (SMS + WhatsApp channels)
         services.Configure<SmsOptions>(configuration.GetSection(SmsOptions.SectionName));
