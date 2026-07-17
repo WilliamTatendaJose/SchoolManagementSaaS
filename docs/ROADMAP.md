@@ -4,17 +4,18 @@ A working document capturing product direction, feature priorities, frontend app
 
 ## Where the codebase stands today
 
-**Genuinely implemented end-to-end** (entity → CQRS handler → controller):
+**Phase 1 (Sellable MVP) is complete** — all seven items below are implemented end-to-end (entity → CQRS handler → controller) with a build-verified test suite (100+ tests across domain, application, and SQLite-backed infrastructure integration tests).
 
-- Multi-tenancy: EF Core global query filters on `ITenantEntity.TenantId`, `TenantMiddleware` resolving the tenant from JWT claims, auto-stamping of tenant/audit/soft-delete fields in `SaveChangesAsync`.
+**Genuinely implemented end-to-end:**
+
+- Multi-tenancy: EF Core global query filter combining tenant isolation and soft-delete on every `ITenantEntity`, referenced via a context member so it re-evaluates per request; `TenantMiddleware` resolves the tenant from JWT claims; audit/tenant/soft-delete rules applied on both sync and async `SaveChanges`. (A cross-tenant leak from the original captured-service filter was found and fixed.)
 - Auth: JWT bearer tokens plus permission-based RBAC (`PermissionPolicyProvider`, `PermissionAuthorizationHandler`, `[RequirePermission]`, permission catalog in `SMS.Application/Common/Security/Permissions.cs`).
-- Vertical slices: Students, Academic (classes, subjects, assessments, results), Attendance, Finance (invoices + manual payment recording), Users/Roles, Tenant provisioning.
-- AWS S3 file storage service.
+- Vertical slices: Students, **Guardians**, **Enrollments** (enroll/transfer/withdraw/promote), Academic (classes, subjects, assessments, results, **report cards**), Attendance, Finance (invoices + payments), **fee structures + bulk invoicing** (sibling discounts, arrears carry-forward), **online payments (Paynow)**, **notifications (SMS + WhatsApp)**, Users/Roles, Tenant provisioning.
+- Integrations: AWS S3 file storage; Paynow payment gateway; config-driven SMS + WhatsApp channels; QuestPDF report cards.
 
-**Data model only — entities and tables exist, but no commands/queries/controllers:**
-Guardian/StudentGuardian, Enrollment, FeeStructure, Staff/TeacherSubject/LeaveRequest, Classroom/TimetableSlot, Dormitory/House, DisciplineRecord, Asset, Message/MessageRecipient, Stream, AuditLog.
+**Still data-model only (Phase 2/3 targets):** Staff/TeacherSubject/LeaveRequest, Classroom/TimetableSlot, Dormitory/House, DisciplineRecord, Asset, Stream, AuditLog.
 
-**Stubbed or missing:** SMS service (logs only), payment gateway (none — payments are manual DB records), email/notification dispatch, frontend, tests (3 files total), validators (2 of ~25 commands).
+**Known follow-ups:** notification dispatch is synchronous (no resilient outbox/background worker yet); report-card teacher/head comments are per-request, not persisted; multi-currency fields on Invoice/Payment not yet added; no frontend.
 
 ---
 
@@ -56,15 +57,15 @@ SMS/WhatsApp are sold as top-up bundles (pass-through cost + margin) — a real 
 
 Every item follows the established slice pattern: entity (mostly already exists) → MediatR command/query + FluentValidation validator under `src/SMS.Application/Features/<Area>` → controller in `src/SMS.API/Controllers` gated by `[RequirePermission]` → new permissions registered in `Permissions.cs`.
 
-### Phase 1 — Sellable MVP (close the money + communication loop)
+### Phase 1 — Sellable MVP (close the money + communication loop) — ✅ complete
 
-1. **Guardians API** (`Guardian`, `StudentGuardian`) — CRUD and student linking. Prerequisite for all parent communication and the parent portal.
-2. **Enrollment API** (`Enrollment`) — enroll, promote, and transfer students per class and academic year. Prerequisite for term-based billing.
-3. **Fee structures → bulk invoicing** (`FeeStructure` + existing `Invoice`) — define fees per class/term/currency; one command generates term invoices for all enrolled students; sibling discounts and arrears carry-forward.
-4. **Paynow payment gateway** — new `IPaymentGatewayService` in Infrastructure. Paynow aggregates EcoCash, OneMoney, ZimSwitch, and card payments. Redirect + status-poll flow with an idempotent callback handler that creates `Payment` records and settles invoices. Manual recording stays for cash/bank.
-5. **Real SMS provider** — replace the `SmsService` stub behind its existing interface (local aggregator or Twilio, provider-agnostic per-tenant config). Add **WhatsApp Business API** as a second message channel for fee reminders and results notifications.
-6. **Notification dispatch** (`Message`, `MessageRecipient`) — outbox table + background worker so sends survive restarts; templates for fee reminders, absence alerts, and results-published notices.
-7. **Report cards** — PDF generation (QuestPDF) from existing `Assessment`/`Result` data, with ZIMSEC and Cambridge grade scales and teacher/head comments.
+1. ✅ **Guardians API** (`Guardian`, `StudentGuardian`) — CRUD and student linking. Prerequisite for all parent communication and the parent portal.
+2. ✅ **Enrollment API** (`Enrollment`) — enroll, promote, transfer, and withdraw students per class and academic year.
+3. ✅ **Fee structures → bulk invoicing** (`FeeStructure` + `Invoice`) — define fees per class/term; one command generates term invoices for all enrolled students; sibling discounts and arrears carry-forward.
+4. ✅ **Paynow payment gateway** — `IPaymentGatewayService` in Infrastructure. Redirect + status-poll flow with an idempotent callback handler that settles invoices. Manual recording stays for cash/bank. *(Live HTTP unverified — needs sandbox credentials.)*
+5. ✅ **SMS + WhatsApp channels** — config-driven `SmsService` and a channel abstraction (`IMessageChannel`) with SMS and WhatsApp Business implementations, provider-neutral and buildable without credentials.
+6. ✅ **Notification dispatch** (`Message`, `MessageRecipient`) — recipient resolution to guardians, per-recipient delivery tracking, and templates for announcements and fee reminders. *(Synchronous; resilient outbox + background worker is a follow-up.)*
+7. ✅ **Report cards** — QuestPDF PDF generation from `Assessment`/`Result` data, with ZIMSEC and Cambridge grade scales and optional teacher/head comments.
 
 ### Phase 2 — Full school office
 
