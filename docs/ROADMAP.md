@@ -13,11 +13,11 @@ A working document capturing product direction, feature priorities, frontend app
 - Vertical slices: Students, **Guardians**, **Enrollments** (enroll/transfer/withdraw/promote), Academic (classes, subjects, assessments, results, **report cards**), Attendance, Finance (invoices + payments), **fee structures + bulk invoicing** (sibling discounts, arrears carry-forward), **online payments (Paynow)**, **notifications (SMS + WhatsApp)**, Users/Roles, Tenant provisioning.
 - Integrations: AWS S3 file storage; Paynow payment gateway; config-driven SMS + WhatsApp channels; QuestPDF report cards.
 
-**Now implemented end-to-end (Phase 2/3):** Staff/HR, Timetable (+clash detection), Discipline (+guardian notify), Parent portal, Finance depth (defaulters/reconciliation/receipts), Boarding/Hostel, Assets register, and an analytics dashboard. `AuditLog` is wired via a MediatR pipeline behavior; every input-bearing command has a validator.
+**Now implemented end-to-end (Phase 2/3):** Staff/HR, Timetable (+clash detection), Discipline (+guardian notify), Parent portal, Finance depth (defaulters/reconciliation/receipts, payment plans/installments), Boarding/Hostel, Assets register, and an analytics dashboard. Multi-currency (USD+ZWG) is on Invoice/Payment, and notification dispatch runs through a resilient outbox + background worker. `AuditLog` is wired via a MediatR pipeline behavior; every input-bearing command has a validator.
 
 **Still data-model only / not started:** `Stream` (class streams). New entities are needed for the deferred items below.
 
-**Known follow-ups / deferred (need new entities or infra):** payment plans/installments; boarding weekend-leave register; transport, library, and LMS-lite modules; a resilient notification outbox + background worker (dispatch is currently synchronous); persisted report-card teacher/head comments; multi-currency (USD+ZWG) on Invoice/Payment; and the frontend (no UI yet).
+**Known follow-ups / deferred (need new entities or infra):** boarding weekend-leave register; transport, library, and LMS-lite modules; persisted report-card teacher/head comments; and the frontend (no UI yet).
 
 ---
 
@@ -75,7 +75,7 @@ Every item follows the established slice pattern: entity (mostly already exists)
 9. ✅ **Timetable** (`Classroom`, `TimetableSlot`) — manual slot editor with class/teacher/classroom clash detection. *(Auto-solver out of scope.)*
 10. ✅ **Discipline** (`DisciplineRecord`) with a guardian-notification hook (reuses the messaging pipeline).
 11. ✅ **Parent portal API** — read-only endpoints scoped to a guardian's own children (ownership boundary): children list, results, attendance, and finance/balances with payable-invoice flags.
-12. ✅ **Finance depth** — PDF receipts, defaulters report, cashier daily reconciliation. *(Payment plans/installments deferred — needs a new entity.)*
+12. ✅ **Finance depth** — PDF receipts, defaulters report, cashier daily reconciliation, and payment plans (split an invoice balance into scheduled installments, mark installments paid, auto-complete the plan).
 
 ### Phase 3 — Differentiation — ✅ core complete (with noted deferrals)
 

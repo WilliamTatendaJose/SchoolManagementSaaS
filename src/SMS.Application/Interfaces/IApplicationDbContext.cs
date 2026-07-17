@@ -54,6 +54,8 @@ public interface IApplicationDbContext
     DbSet<Invoice> Invoices { get; }
     DbSet<InvoiceItem> InvoiceItems { get; }
     DbSet<Payment> Payments { get; }
+    DbSet<PaymentPlan> PaymentPlans { get; }
+    DbSet<Installment> Installments { get; }
     
     // Communication
     DbSet<Message> Messages { get; }
