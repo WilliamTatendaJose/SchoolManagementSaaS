@@ -13,9 +13,11 @@ A working document capturing product direction, feature priorities, frontend app
 - Vertical slices: Students, **Guardians**, **Enrollments** (enroll/transfer/withdraw/promote), Academic (classes, subjects, assessments, results, **report cards**), Attendance, Finance (invoices + payments), **fee structures + bulk invoicing** (sibling discounts, arrears carry-forward), **online payments (Paynow)**, **notifications (SMS + WhatsApp)**, Users/Roles, Tenant provisioning.
 - Integrations: AWS S3 file storage; Paynow payment gateway; config-driven SMS + WhatsApp channels; QuestPDF report cards.
 
-**Still data-model only (Phase 2/3 targets):** Staff/TeacherSubject/LeaveRequest, Classroom/TimetableSlot, Dormitory/House, DisciplineRecord, Asset, Stream, AuditLog.
+**Now implemented end-to-end (Phase 2/3):** Staff/HR, Timetable (+clash detection), Discipline (+guardian notify), Parent portal, Finance depth (defaulters/reconciliation/receipts), Boarding/Hostel, Assets register, and an analytics dashboard. `AuditLog` is wired via a MediatR pipeline behavior; every input-bearing command has a validator.
 
-**Known follow-ups:** notification dispatch is synchronous (no resilient outbox/background worker yet); report-card teacher/head comments are per-request, not persisted; multi-currency fields on Invoice/Payment not yet added; no frontend.
+**Still data-model only / not started:** `Stream` (class streams). New entities are needed for the deferred items below.
+
+**Known follow-ups / deferred (need new entities or infra):** payment plans/installments; boarding weekend-leave register; transport, library, and LMS-lite modules; a resilient notification outbox + background worker (dispatch is currently synchronous); persisted report-card teacher/head comments; multi-currency (USD+ZWG) on Invoice/Payment; and the frontend (no UI yet).
 
 ---
 
@@ -67,18 +69,18 @@ Every item follows the established slice pattern: entity (mostly already exists)
 6. ✅ **Notification dispatch** (`Message`, `MessageRecipient`) — recipient resolution to guardians, per-recipient delivery tracking, and templates for announcements and fee reminders. *(Synchronous; resilient outbox + background worker is a follow-up.)*
 7. ✅ **Report cards** — QuestPDF PDF generation from `Assessment`/`Result` data, with ZIMSEC and Cambridge grade scales and optional teacher/head comments.
 
-### Phase 2 — Full school office
+### Phase 2 — Full school office — ✅ complete (with noted deferrals)
 
-8. **Staff/HR** (`Staff`, `TeacherSubject`, `LeaveRequest`) — staff records, subject allocation, leave workflow.
-9. **Timetable** (`Classroom`, `TimetableSlot`) — manual slot editor with clash detection first; auto-solver much later.
-10. **Discipline** (`DisciplineRecord`) with a guardian-notification hook.
-11. **Parent portal API** — read-only endpoints scoped to a guardian's own children: results, attendance, balances, and a pay-now link.
-12. **Finance depth** — PDF receipts, payment plans, defaulters report, cashier daily reconciliation report.
+8. ✅ **Staff/HR** (`Staff`, `TeacherSubject`, `LeaveRequest`) — staff records, subject allocation, leave approve-once workflow.
+9. ✅ **Timetable** (`Classroom`, `TimetableSlot`) — manual slot editor with class/teacher/classroom clash detection. *(Auto-solver out of scope.)*
+10. ✅ **Discipline** (`DisciplineRecord`) with a guardian-notification hook (reuses the messaging pipeline).
+11. ✅ **Parent portal API** — read-only endpoints scoped to a guardian's own children (ownership boundary): children list, results, attendance, and finance/balances with payable-invoice flags.
+12. ✅ **Finance depth** — PDF receipts, defaulters report, cashier daily reconciliation. *(Payment plans/installments deferred — needs a new entity.)*
 
-### Phase 3 — Differentiation
+### Phase 3 — Differentiation — ✅ core complete (with noted deferrals)
 
-13. **Boarding/hostel** (`Dormitory`, `House`) — bed allocation, boarding fees, weekend-leave register. An underserved niche where mission/boarding schools have few options.
-14. **Assets register** (`Asset`), **analytics dashboards** (enrollment trends, fee-collection rate, attendance heatmaps), transport and library modules, and an LMS-lite (homework + file sharing on the existing S3 service).
+13. ✅ **Boarding/hostel** (`Dormitory`, `House`) — dormitory/house CRUD and student allocation with gender + capacity enforcement, occupancy reporting. *(Weekend-leave register deferred — needs a new entity; boarding fees ride on fee structures.)*
+14. ✅ **Assets register** (`Asset`) and an **analytics dashboard** (student/staff/class counts, fee-collection rate, 30-day attendance rate, enrollment by class). *(Transport, library, and LMS-lite deferred — each needs new domain entities.)*
 
 ---
 
