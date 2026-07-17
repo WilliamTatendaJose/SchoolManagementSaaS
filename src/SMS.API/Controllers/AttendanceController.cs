@@ -15,11 +15,13 @@ public class AttendanceController : BaseApiController
 {
     private readonly IApplicationDbContext _context;
     private readonly ISmsService _smsService;
+    private readonly IWhatsAppService _whatsAppService;
 
-    public AttendanceController(IApplicationDbContext context, ISmsService smsService)
+    public AttendanceController(IApplicationDbContext context, ISmsService smsService, IWhatsAppService whatsAppService)
     {
         _context = context;
         _smsService = smsService;
+        _whatsAppService = whatsAppService;
     }
 
     /// <summary>
@@ -149,7 +151,16 @@ public class AttendanceController : BaseApiController
             if (guardian?.Phone != null)
             {
                 var message = $"Dear Parent/Guardian, {studentName} was marked absent on {date:dd/MM/yyyy}. Please contact the school if this is unexpected.";
-                await _smsService.SendSmsAsync(guardian.Phone, message);
+
+                // Prefer WhatsApp when configured, otherwise fall back to SMS.
+                if (_whatsAppService.IsConfigured)
+                {
+                    await _whatsAppService.SendMessageAsync(guardian.Phone, message);
+                }
+                else
+                {
+                    await _smsService.SendSmsAsync(guardian.Phone, message);
+                }
             }
         }
     }

@@ -35,6 +35,7 @@ tests/
 - ? Student management
 - ? Guardian/Parent management
 - ? Attendance tracking with SMS notifications
+- ? WhatsApp notifications (WhatsApp Business Cloud API)
 - ? Fee management and payments
 - ? Role-based access control (RBAC)
 - ? JWT authentication

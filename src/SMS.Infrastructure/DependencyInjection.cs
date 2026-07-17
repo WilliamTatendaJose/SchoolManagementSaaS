@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ISmsService, SmsService>();
+        services.AddHttpClient<IWhatsAppService, WhatsAppService>();
         services.AddScoped<IFileStorageService, S3FileStorageService>();
 
         // AWS S3

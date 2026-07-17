@@ -11,15 +11,18 @@ public class MarkAttendanceCommandHandler : IRequestHandler<MarkAttendanceComman
 {
     private readonly IApplicationDbContext _context;
     private readonly ISmsService _smsService;
+    private readonly IWhatsAppService _whatsAppService;
     private readonly ICurrentUserService _currentUserService;
 
     public MarkAttendanceCommandHandler(
         IApplicationDbContext context,
         ISmsService smsService,
+        IWhatsAppService whatsAppService,
         ICurrentUserService currentUserService)
     {
         _context = context;
         _smsService = smsService;
+        _whatsAppService = whatsAppService;
         _currentUserService = currentUserService;
     }
 
@@ -111,9 +114,18 @@ public class MarkAttendanceCommandHandler : IRequestHandler<MarkAttendanceComman
             if (guardian?.Phone != null)
             {
                 var message = $"Dear Parent/Guardian, {studentName} was marked absent on {date:dd/MM/yyyy}. Please contact the school if this is unexpected.";
-                await _smsService.SendSmsAsync(guardian.Phone, message, cancellationToken);
 
-                // Update attendance record to mark SMS as sent
+                // Prefer WhatsApp when configured, otherwise fall back to SMS.
+                if (_whatsAppService.IsConfigured)
+                {
+                    await _whatsAppService.SendMessageAsync(guardian.Phone, message, cancellationToken);
+                }
+                else
+                {
+                    await _smsService.SendSmsAsync(guardian.Phone, message, cancellationToken);
+                }
+
+                // Update attendance record to mark notification as sent
                 var attendance = await _context.Attendances
                     .FirstOrDefaultAsync(a => a.StudentId == studentId && a.Date.Date == date.Date, cancellationToken);
 
