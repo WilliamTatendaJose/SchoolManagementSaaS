@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SMS.Application.Interfaces;
 
@@ -9,10 +10,12 @@ namespace SMS.Infrastructure.Services;
 public class SmsService : ISmsService
 {
     private readonly ILogger<SmsService> _logger;
+    private readonly IApplicationDbContext _dbContext;
 
-    public SmsService(ILogger<SmsService> logger)
+    public SmsService(ILogger<SmsService> logger, IApplicationDbContext dbContext)
     {
         _logger = logger;
+        _dbContext = dbContext;
     }
 
     public async Task<bool> SendSmsAsync(string phoneNumber, string message, CancellationToken cancellationToken = default)
@@ -40,9 +43,11 @@ public class SmsService : ISmsService
         return successCount;
     }
 
-    public Task<int> GetRemainingCreditsAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<int> GetRemainingCreditsAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
-        // TODO: Query tenant's SMS credits from database
-        return Task.FromResult(1000);
+        return await _dbContext.Tenants
+            .Where(t => t.Id == tenantId)
+            .Select(t => t.SmsCredits)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }
