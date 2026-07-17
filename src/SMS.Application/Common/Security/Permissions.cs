@@ -61,6 +61,10 @@ public static class Permissions
     public const string LibraryView = "library.view";
     public const string LibraryManage = "library.manage";
 
+    // LMS-lite (homework/assignments)
+    public const string AssignmentsView = "assignments.view";
+    public const string AssignmentsManage = "assignments.manage";
+
     // Assets
     public const string AssetsView = "assets.view";
     public const string AssetsManage = "assets.manage";

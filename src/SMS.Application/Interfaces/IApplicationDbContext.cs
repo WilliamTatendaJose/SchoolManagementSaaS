@@ -74,6 +74,10 @@ public interface IApplicationDbContext
     // Library
     DbSet<Book> Books { get; }
     DbSet<BookLoan> BookLoans { get; }
+
+    // LMS-lite
+    DbSet<Assignment> Assignments { get; }
+    DbSet<AssignmentSubmission> AssignmentSubmissions { get; }
     
     // Discipline
     DbSet<DisciplineRecord> DisciplineRecords { get; }

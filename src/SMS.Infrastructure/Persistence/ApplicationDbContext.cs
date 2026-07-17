@@ -89,6 +89,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Book> Books => Set<Book>();
     public DbSet<BookLoan> BookLoans => Set<BookLoan>();
 
+    // LMS-lite
+    public DbSet<Assignment> Assignments => Set<Assignment>();
+    public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
+
     // Discipline
     public DbSet<DisciplineRecord> DisciplineRecords => Set<DisciplineRecord>();
 

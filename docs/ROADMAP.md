@@ -13,11 +13,11 @@ A working document capturing product direction, feature priorities, frontend app
 - Vertical slices: Students, **Guardians**, **Enrollments** (enroll/transfer/withdraw/promote), Academic (classes, subjects, assessments, results, **report cards**), Attendance, Finance (invoices + payments), **fee structures + bulk invoicing** (sibling discounts, arrears carry-forward), **online payments (Paynow)**, **notifications (SMS + WhatsApp)**, Users/Roles, Tenant provisioning.
 - Integrations: AWS S3 file storage; Paynow payment gateway; config-driven SMS + WhatsApp channels; QuestPDF report cards.
 
-**Now implemented end-to-end (Phase 2/3):** Staff/HR, Timetable (+clash detection), Discipline (+guardian notify), Parent portal, Finance depth (defaulters/reconciliation/receipts, payment plans/installments), Boarding/Hostel (+weekend-leave register), Assets register, and an analytics dashboard. Multi-currency (USD+ZWG) is on Invoice/Payment, and notification dispatch runs through a resilient outbox + background worker. `AuditLog` is wired via a MediatR pipeline behavior; every input-bearing command has a validator.
+**Now implemented end-to-end (Phase 2/3):** Staff/HR, Timetable (+clash detection), Discipline (+guardian notify), Parent portal, Finance depth (defaulters/reconciliation/receipts, payment plans/installments), Boarding/Hostel (+weekend-leave register), Transport, Library, an LMS-lite (assignments + submissions + grading, file attachments via S3), Assets register, and an analytics dashboard. Multi-currency (USD+ZWG) is on Invoice/Payment, and notification dispatch runs through a resilient outbox + background worker. `AuditLog` is wired via a MediatR pipeline behavior; every input-bearing command has a validator.
 
-**Still data-model only / not started:** `Stream` (class streams). New entities are needed for the deferred items below.
+**Still data-model only / not started:** `Stream` (class streams).
 
-**Known follow-ups / deferred (need new entities or infra):** an LMS-lite module (homework/file-sharing); and the frontend (no UI yet).
+**Backend feature roadmap (Phases 1-3) is now complete.** The only remaining major item is the frontend (no UI yet) — see §3 below.
 
 ---
 
@@ -82,7 +82,8 @@ Every item follows the established slice pattern: entity (mostly already exists)
 13. ✅ **Boarding/hostel** (`Dormitory`, `House`, `WeekendLeave`) — dormitory/house CRUD and student allocation with gender + capacity enforcement, occupancy reporting, and a weekend-leave register (request → approve/reject with guardian SMS → sign-out/sign-in). *(Boarding fees ride on fee structures.)*
 14. ✅ **Assets register** (`Asset`) and an **analytics dashboard** (student/staff/class counts, fee-collection rate, 30-day attendance rate, enrollment by class).
 15. ✅ **Transport** (`TransportRoute`, `RouteStop`) — routes with vehicle/driver, ordered stops with pickup/dropoff times, student-to-stop assignment with route-wide (vehicle) capacity enforcement, and a `TransportOfficer` role.
-16. ✅ **Library** (`Book`, `BookLoan`) — catalog with search, borrow/return (one active copy per student per title, capacity enforced against total copies), lost-copy handling that permanently reduces the catalog total, overdue-loans report, per-student loan history, and a `Librarian` role. *(LMS-lite deferred — needs new domain entities.)*
+16. ✅ **Library** (`Book`, `BookLoan`) — catalog with search, borrow/return (one active copy per student per title, capacity enforced against total copies), lost-copy handling that permanently reduces the catalog total, overdue-loans report, per-student loan history, and a `Librarian` role.
+17. ✅ **LMS-lite** (`Assignment`, `AssignmentSubmission`) — teachers set assignments per class/subject/term with an optional file attachment (uploaded to S3 via the existing `IFileStorageService`); submissions are recorded per student (auto-flagged Late past the due date, resubmission allowed until graded), then graded with a score and feedback; a student's assignment list shows their own submission status and grade.
 
 ---
 

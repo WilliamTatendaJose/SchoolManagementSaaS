@@ -45,6 +45,7 @@ public static class DefaultRoles
                 Permissions.HostelView, Permissions.HostelManage,
                 Permissions.TransportView, Permissions.TransportManage,
                 Permissions.LibraryView, Permissions.LibraryManage,
+                Permissions.AssignmentsView, Permissions.AssignmentsManage,
                 Permissions.AssetsView, Permissions.AssetsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
@@ -68,6 +69,7 @@ public static class DefaultRoles
                 Permissions.HostelView, Permissions.HostelManage,
                 Permissions.TransportView, Permissions.TransportManage,
                 Permissions.LibraryView, Permissions.LibraryManage,
+                Permissions.AssignmentsView, Permissions.AssignmentsManage,
                 Permissions.AssetsView, Permissions.AssetsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
@@ -86,6 +88,7 @@ public static class DefaultRoles
                 Permissions.FinanceView, Permissions.FeeStructuresView, Permissions.FinanceReport,
                 Permissions.MessagesView, Permissions.MessagesSend, Permissions.MessagesBulk,
                 Permissions.StaffView, Permissions.LeaveApprove,
+                Permissions.AssignmentsView,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
 
@@ -101,6 +104,7 @@ public static class DefaultRoles
                 Permissions.AttendanceView, Permissions.AttendanceMark,
                 Permissions.DisciplineView, Permissions.DisciplineManage,
                 Permissions.MessagesView, Permissions.MessagesSend,
+                Permissions.AssignmentsView, Permissions.AssignmentsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsAttendance
             },
 
@@ -120,7 +124,8 @@ public static class DefaultRoles
                 Permissions.ResultsView,
                 Permissions.AttendanceView,
                 Permissions.FinanceView,
-                Permissions.MessagesView
+                Permissions.MessagesView,
+                Permissions.AssignmentsView
             },
 
             [Student] = new List<string>
@@ -128,7 +133,8 @@ public static class DefaultRoles
                 Permissions.ResultsView,
                 Permissions.AttendanceView,
                 Permissions.TimetableView,
-                Permissions.MessagesView
+                Permissions.MessagesView,
+                Permissions.AssignmentsView
             },
 
             [HostelWarden] = new List<string>
