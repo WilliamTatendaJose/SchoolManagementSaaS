@@ -42,6 +42,7 @@ public static class DefaultRoles
                 Permissions.StaffView, Permissions.StaffCreate, Permissions.StaffEdit, Permissions.StaffDelete, Permissions.LeaveApprove,
                 Permissions.UsersView, Permissions.UsersCreate, Permissions.UsersEdit, Permissions.UsersDelete, Permissions.RolesManage,
                 Permissions.SettingsView, Permissions.SettingsManage, Permissions.AuditLogsView, Permissions.TenantManage,
+                Permissions.HostelView, Permissions.HostelManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
 
@@ -61,6 +62,7 @@ public static class DefaultRoles
                 Permissions.StaffView, Permissions.StaffCreate, Permissions.StaffEdit, Permissions.StaffDelete, Permissions.LeaveApprove,
                 Permissions.UsersView, Permissions.UsersCreate, Permissions.UsersEdit,
                 Permissions.SettingsView, Permissions.SettingsManage,
+                Permissions.HostelView, Permissions.HostelManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
 
@@ -121,6 +123,13 @@ public static class DefaultRoles
                 Permissions.AttendanceView,
                 Permissions.TimetableView,
                 Permissions.MessagesView
+            },
+
+            [HostelWarden] = new List<string>
+            {
+                Permissions.StudentsView,
+                Permissions.HostelView, Permissions.HostelManage,
+                Permissions.MessagesView, Permissions.MessagesSend
             }
         };
     }

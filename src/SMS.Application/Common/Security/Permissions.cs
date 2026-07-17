@@ -49,6 +49,10 @@ public static class Permissions
     public const string DisciplineView = "discipline.view";
     public const string DisciplineManage = "discipline.manage";
 
+    // Hostel / Boarding
+    public const string HostelView = "hostel.view";
+    public const string HostelManage = "hostel.manage";
+
     // Finance
     public const string FinanceView = "finance.view";
     public const string FeeStructuresView = "feestructures.view";

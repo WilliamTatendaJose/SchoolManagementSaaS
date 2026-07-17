@@ -72,6 +72,10 @@ public static class DatabaseSeeder
             new() { Name = "View Discipline", Code = Permissions.DisciplineView, Module = "Discipline", Description = "View discipline records" },
             new() { Name = "Manage Discipline", Code = Permissions.DisciplineManage, Module = "Discipline", Description = "Record and manage discipline incidents" },
 
+            // Hostel
+            new() { Name = "View Hostel", Code = Permissions.HostelView, Module = "Hostel", Description = "View dormitories, houses and occupancy" },
+            new() { Name = "Manage Hostel", Code = Permissions.HostelManage, Module = "Hostel", Description = "Manage dormitories/houses and student allocation" },
+
             // Finance
             new() { Name = "View Finance", Code = Permissions.FinanceView, Module = "Finance", Description = "View financial data" },
             new() { Name = "View Fee Structures", Code = Permissions.FeeStructuresView, Module = "Finance", Description = "View fee structures" },
