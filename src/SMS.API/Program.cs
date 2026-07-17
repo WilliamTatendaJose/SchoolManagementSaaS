@@ -63,9 +63,14 @@ app.UseRateLimiter();
 app.UseOutputCache();
 
 app.UseAuthentication();
+
+// Must run after authentication (needs the JWT claims) but before authorization:
+// permission checks query tenant-scoped data, and the tenant filter only matches
+// once ITenantService has been populated from the token.
+app.UseMiddleware<TenantMiddleware>();
+
 app.UseAuthorization();
 
-app.UseMiddleware<TenantMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();

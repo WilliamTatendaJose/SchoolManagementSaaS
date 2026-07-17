@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using SMS.Infrastructure.Persistence;
 using System.Security.Claims;
 
@@ -11,11 +10,15 @@ namespace SMS.Infrastructure.Authorization;
 /// </summary>
 public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly ApplicationDbContext _dbContext;
 
-    public PermissionAuthorizationHandler(IServiceProvider serviceProvider)
+    // Injected directly (this handler is registered Scoped) rather than resolved via a
+    // manually-created IServiceScope: creating a new scope hands back a fresh
+    // ITenantService/DbContext pair, discarding the tenant TenantMiddleware already set
+    // on the current request's scope, so every permission check would always fail.
+    public PermissionAuthorizationHandler(ApplicationDbContext dbContext)
     {
-        _serviceProvider = serviceProvider;
+        _dbContext = dbContext;
     }
 
     protected override async Task HandleRequirementAsync(
@@ -30,10 +33,7 @@ public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionReq
         }
 
         // Check if user has the required permission through their roles
-        using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        var hasPermission = await dbContext.UserRoles
+        var hasPermission = await _dbContext.UserRoles
             .Where(ur => ur.UserId == userGuid)
             .SelectMany(ur => ur.Role.Permissions)
             .AnyAsync(rp => rp.Permission.Code == requirement.Permission);
