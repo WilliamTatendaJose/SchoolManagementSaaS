@@ -49,3 +49,21 @@ export interface UserDetailDto {
   staffNumber?: string | null
   guardianId?: string | null
 }
+
+export interface ClassEnrollmentDto {
+  className: string
+  studentCount: number
+}
+
+export interface DashboardDto {
+  activeStudents: number
+  boardingStudents: number
+  totalStaff: number
+  totalClasses: number
+  totalBilled: number
+  totalCollected: number
+  totalOutstanding: number
+  collectionRatePercent: number
+  attendanceRatePercent: number
+  enrollmentByClass: ClassEnrollmentDto[]
+}

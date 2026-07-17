@@ -20,7 +20,7 @@ export default function App() {
               <Route
                 key={item.path}
                 path={item.path}
-                element={<ComingSoonPage title={item.label} />}
+                element={<ComingSoonPage title={item.label} icon={item.icon} />}
               />
             ))}
         </Route>

@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -30,6 +31,12 @@ export default defineConfig({
     }),
   ],
   server: {
+    // node_modules can get hoisted up to the repo root (SMS.Web lives inside a larger
+    // .NET solution, not its own workspace root), which Vite's default fs boundary
+    // doesn't include — without this, deps hoisted above this project's root 404.
+    fs: {
+      allow: [path.resolve(__dirname, '..', '..')],
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:59584',
