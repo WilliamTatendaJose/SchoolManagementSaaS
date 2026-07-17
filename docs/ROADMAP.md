@@ -17,7 +17,7 @@ A working document capturing product direction, feature priorities, frontend app
 
 **Still data-model only / not started:** `Stream` (class streams).
 
-**Backend feature roadmap (Phases 1-3) is now complete.** The only remaining major item is the frontend (no UI yet) — see §3 below.
+**Backend feature roadmap (Phases 1-3) is now complete.** The frontend (`src/SMS.Web`) has started: a React/TypeScript/Vite PWA with tenant-select login, JWT session handling with transparent refresh, and a permission-driven app shell (sidebar nav filtered by `GET /users/me` permissions). Every other screen is still a placeholder — see §3 below for the plan.
 
 ---
 
