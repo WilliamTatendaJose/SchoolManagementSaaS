@@ -78,6 +78,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     // Hostel
     public DbSet<Dormitory> Dormitories => Set<Dormitory>();
     public DbSet<House> Houses => Set<House>();
+    public DbSet<WeekendLeave> WeekendLeaves => Set<WeekendLeave>();
 
     // Discipline
     public DbSet<DisciplineRecord> DisciplineRecords => Set<DisciplineRecord>();

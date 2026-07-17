@@ -34,4 +34,5 @@ public static class MessageTypes
     public const string ResultsPublished = "ResultsPublished";
     public const string AbsenceAlert = "AbsenceAlert";
     public const string Discipline = "Discipline";
+    public const string BoardingLeave = "BoardingLeave";
 }

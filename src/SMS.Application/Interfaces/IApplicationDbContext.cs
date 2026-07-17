@@ -64,6 +64,7 @@ public interface IApplicationDbContext
     // Hostel
     DbSet<Dormitory> Dormitories { get; }
     DbSet<House> Houses { get; }
+    DbSet<WeekendLeave> WeekendLeaves { get; }
     
     // Discipline
     DbSet<DisciplineRecord> DisciplineRecords { get; }

@@ -19,4 +19,7 @@ public static class MessageTemplates
 
     public static string DisciplineNotice(string studentName, string incidentType, DateTime date, string schoolName)
         => $"Dear Parent/Guardian, a discipline incident ({incidentType}) was recorded for {studentName} on {date:dd MMM yyyy}. Please contact the school to discuss. - {schoolName}";
+
+    public static string WeekendLeaveApproved(string studentName, DateTime departureDate, DateTime returnDate, string schoolName)
+        => $"Dear Parent/Guardian, weekend leave for {studentName} has been approved from {departureDate:dd MMM yyyy} to {returnDate:dd MMM yyyy}. - {schoolName}";
 }

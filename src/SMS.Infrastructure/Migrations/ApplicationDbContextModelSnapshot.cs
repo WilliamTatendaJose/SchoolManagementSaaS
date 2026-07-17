@@ -2441,6 +2441,90 @@ namespace SMS.Infrastructure.Migrations
                     b.ToTable("UserRoles");
                 });
 
+            modelBuilder.Entity("SMS.Domain.Entities.WeekendLeave", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ActualDepartureAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ActualReturnAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("AuthorizedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CollectedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("DepartureDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Destination")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("ExpectedReturnDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("GuardianNotified")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ReviewNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorizedById");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("StudentId", "DepartureDate");
+
+                    b.ToTable("WeekendLeaves");
+                });
+
             modelBuilder.Entity("SMS.Domain.Entities.AcademicTerm", b =>
                 {
                     b.HasOne("SMS.Domain.Entities.AcademicYear", "AcademicYear")
@@ -3106,6 +3190,32 @@ namespace SMS.Infrastructure.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.WeekendLeave", b =>
+                {
+                    b.HasOne("SMS.Domain.Entities.Staff", "AuthorizedBy")
+                        .WithMany()
+                        .HasForeignKey("AuthorizedById")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SMS.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SMS.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AuthorizedBy");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.AcademicTerm", b =>

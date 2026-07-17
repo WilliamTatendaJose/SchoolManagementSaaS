@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SMS.Application.Common.Security;
+using SMS.Application.Features.Boarding.Commands;
+using SMS.Application.Features.Boarding.Queries;
 using SMS.Application.Features.Hostel.Commands;
 using SMS.Application.Features.Hostel.Queries;
 using SMS.Infrastructure.Authorization;
@@ -69,6 +71,57 @@ public class HostelController : BaseApiController
     [RequirePermission(Permissions.HostelManage)]
     public async Task<IActionResult> AssignHouse([FromBody] AssignStudentToHouseCommand command)
     {
+        var result = await Mediator.Send(command);
+        return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+    }
+
+    // Weekend-leave register
+
+    [HttpGet("leaves")]
+    [RequirePermission(Permissions.HostelView)]
+    public async Task<IActionResult> GetWeekendLeaves([FromQuery] GetWeekendLeavesQuery query)
+    {
+        var result = await Mediator.Send(query);
+        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+    }
+
+    [HttpPost("leaves")]
+    [RequirePermission(Permissions.HostelManage)]
+    public async Task<IActionResult> RequestWeekendLeave([FromBody] RequestWeekendLeaveCommand command)
+    {
+        var result = await Mediator.Send(command);
+        return result.IsSuccess ? Ok(new { Id = result.Data }) : BadRequest(result.Error);
+    }
+
+    [HttpPost("leaves/{id:guid}/review")]
+    [RequirePermission(Permissions.HostelManage)]
+    public async Task<IActionResult> ReviewWeekendLeave(Guid id, [FromBody] ReviewWeekendLeaveCommand command)
+    {
+        if (id != command.LeaveId)
+            return BadRequest("ID mismatch");
+
+        var result = await Mediator.Send(command);
+        return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+    }
+
+    [HttpPost("leaves/{id:guid}/depart")]
+    [RequirePermission(Permissions.HostelManage)]
+    public async Task<IActionResult> RecordLeaveDeparture(Guid id, [FromBody] RecordLeaveDepartureCommand command)
+    {
+        if (id != command.LeaveId)
+            return BadRequest("ID mismatch");
+
+        var result = await Mediator.Send(command);
+        return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+    }
+
+    [HttpPost("leaves/{id:guid}/return")]
+    [RequirePermission(Permissions.HostelManage)]
+    public async Task<IActionResult> RecordLeaveReturn(Guid id, [FromBody] RecordLeaveReturnCommand command)
+    {
+        if (id != command.LeaveId)
+            return BadRequest("ID mismatch");
+
         var result = await Mediator.Send(command);
         return result.IsSuccess ? NoContent() : BadRequest(result.Error);
     }

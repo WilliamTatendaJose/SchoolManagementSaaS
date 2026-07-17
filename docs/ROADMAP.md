@@ -13,11 +13,11 @@ A working document capturing product direction, feature priorities, frontend app
 - Vertical slices: Students, **Guardians**, **Enrollments** (enroll/transfer/withdraw/promote), Academic (classes, subjects, assessments, results, **report cards**), Attendance, Finance (invoices + payments), **fee structures + bulk invoicing** (sibling discounts, arrears carry-forward), **online payments (Paynow)**, **notifications (SMS + WhatsApp)**, Users/Roles, Tenant provisioning.
 - Integrations: AWS S3 file storage; Paynow payment gateway; config-driven SMS + WhatsApp channels; QuestPDF report cards.
 
-**Now implemented end-to-end (Phase 2/3):** Staff/HR, Timetable (+clash detection), Discipline (+guardian notify), Parent portal, Finance depth (defaulters/reconciliation/receipts, payment plans/installments), Boarding/Hostel, Assets register, and an analytics dashboard. Multi-currency (USD+ZWG) is on Invoice/Payment, and notification dispatch runs through a resilient outbox + background worker. `AuditLog` is wired via a MediatR pipeline behavior; every input-bearing command has a validator.
+**Now implemented end-to-end (Phase 2/3):** Staff/HR, Timetable (+clash detection), Discipline (+guardian notify), Parent portal, Finance depth (defaulters/reconciliation/receipts, payment plans/installments), Boarding/Hostel (+weekend-leave register), Assets register, and an analytics dashboard. Multi-currency (USD+ZWG) is on Invoice/Payment, and notification dispatch runs through a resilient outbox + background worker. `AuditLog` is wired via a MediatR pipeline behavior; every input-bearing command has a validator.
 
 **Still data-model only / not started:** `Stream` (class streams). New entities are needed for the deferred items below.
 
-**Known follow-ups / deferred (need new entities or infra):** boarding weekend-leave register; transport, library, and LMS-lite modules; persisted report-card teacher/head comments; and the frontend (no UI yet).
+**Known follow-ups / deferred (need new entities or infra):** transport, library, and LMS-lite modules; persisted report-card teacher/head comments; and the frontend (no UI yet).
 
 ---
 
@@ -79,7 +79,7 @@ Every item follows the established slice pattern: entity (mostly already exists)
 
 ### Phase 3 — Differentiation — ✅ core complete (with noted deferrals)
 
-13. ✅ **Boarding/hostel** (`Dormitory`, `House`) — dormitory/house CRUD and student allocation with gender + capacity enforcement, occupancy reporting. *(Weekend-leave register deferred — needs a new entity; boarding fees ride on fee structures.)*
+13. ✅ **Boarding/hostel** (`Dormitory`, `House`, `WeekendLeave`) — dormitory/house CRUD and student allocation with gender + capacity enforcement, occupancy reporting, and a weekend-leave register (request → approve/reject with guardian SMS → sign-out/sign-in). *(Boarding fees ride on fee structures.)*
 14. ✅ **Assets register** (`Asset`) and an **analytics dashboard** (student/staff/class counts, fee-collection rate, 30-day attendance rate, enrollment by class). *(Transport, library, and LMS-lite deferred — each needs new domain entities.)*
 
 ---
