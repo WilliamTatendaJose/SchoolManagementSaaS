@@ -57,6 +57,10 @@ public static class Permissions
     public const string TransportView = "transport.view";
     public const string TransportManage = "transport.manage";
 
+    // Library
+    public const string LibraryView = "library.view";
+    public const string LibraryManage = "library.manage";
+
     // Assets
     public const string AssetsView = "assets.view";
     public const string AssetsManage = "assets.manage";

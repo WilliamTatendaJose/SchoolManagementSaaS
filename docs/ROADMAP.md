@@ -17,7 +17,7 @@ A working document capturing product direction, feature priorities, frontend app
 
 **Still data-model only / not started:** `Stream` (class streams). New entities are needed for the deferred items below.
 
-**Known follow-ups / deferred (need new entities or infra):** library and LMS-lite modules; and the frontend (no UI yet).
+**Known follow-ups / deferred (need new entities or infra):** an LMS-lite module (homework/file-sharing); and the frontend (no UI yet).
 
 ---
 
@@ -81,7 +81,8 @@ Every item follows the established slice pattern: entity (mostly already exists)
 
 13. ✅ **Boarding/hostel** (`Dormitory`, `House`, `WeekendLeave`) — dormitory/house CRUD and student allocation with gender + capacity enforcement, occupancy reporting, and a weekend-leave register (request → approve/reject with guardian SMS → sign-out/sign-in). *(Boarding fees ride on fee structures.)*
 14. ✅ **Assets register** (`Asset`) and an **analytics dashboard** (student/staff/class counts, fee-collection rate, 30-day attendance rate, enrollment by class).
-15. ✅ **Transport** (`TransportRoute`, `RouteStop`) — routes with vehicle/driver, ordered stops with pickup/dropoff times, student-to-stop assignment with route-wide (vehicle) capacity enforcement, and a `TransportOfficer` role. *(Library and LMS-lite deferred — each needs new domain entities.)*
+15. ✅ **Transport** (`TransportRoute`, `RouteStop`) — routes with vehicle/driver, ordered stops with pickup/dropoff times, student-to-stop assignment with route-wide (vehicle) capacity enforcement, and a `TransportOfficer` role.
+16. ✅ **Library** (`Book`, `BookLoan`) — catalog with search, borrow/return (one active copy per student per title, capacity enforced against total copies), lost-copy handling that permanently reduces the catalog total, overdue-loans report, per-student loan history, and a `Librarian` role. *(LMS-lite deferred — needs new domain entities.)*
 
 ---
 

@@ -44,6 +44,7 @@ public static class DefaultRoles
                 Permissions.SettingsView, Permissions.SettingsManage, Permissions.AuditLogsView, Permissions.TenantManage,
                 Permissions.HostelView, Permissions.HostelManage,
                 Permissions.TransportView, Permissions.TransportManage,
+                Permissions.LibraryView, Permissions.LibraryManage,
                 Permissions.AssetsView, Permissions.AssetsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
@@ -66,6 +67,7 @@ public static class DefaultRoles
                 Permissions.SettingsView, Permissions.SettingsManage,
                 Permissions.HostelView, Permissions.HostelManage,
                 Permissions.TransportView, Permissions.TransportManage,
+                Permissions.LibraryView, Permissions.LibraryManage,
                 Permissions.AssetsView, Permissions.AssetsManage,
                 Permissions.ReportsAcademic, Permissions.ReportsFinance, Permissions.ReportsAttendance, Permissions.ReportsDashboard
             },
@@ -140,6 +142,13 @@ public static class DefaultRoles
             {
                 Permissions.StudentsView,
                 Permissions.TransportView, Permissions.TransportManage,
+                Permissions.MessagesView, Permissions.MessagesSend
+            },
+
+            [Librarian] = new List<string>
+            {
+                Permissions.StudentsView,
+                Permissions.LibraryView, Permissions.LibraryManage,
                 Permissions.MessagesView, Permissions.MessagesSend
             }
         };

@@ -70,6 +70,10 @@ public interface IApplicationDbContext
     // Transport
     DbSet<TransportRoute> TransportRoutes { get; }
     DbSet<RouteStop> RouteStops { get; }
+
+    // Library
+    DbSet<Book> Books { get; }
+    DbSet<BookLoan> BookLoans { get; }
     
     // Discipline
     DbSet<DisciplineRecord> DisciplineRecords { get; }

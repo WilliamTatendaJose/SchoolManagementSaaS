@@ -85,6 +85,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TransportRoute> TransportRoutes => Set<TransportRoute>();
     public DbSet<RouteStop> RouteStops => Set<RouteStop>();
 
+    // Library
+    public DbSet<Book> Books => Set<Book>();
+    public DbSet<BookLoan> BookLoans => Set<BookLoan>();
+
     // Discipline
     public DbSet<DisciplineRecord> DisciplineRecords => Set<DisciplineRecord>();
 
