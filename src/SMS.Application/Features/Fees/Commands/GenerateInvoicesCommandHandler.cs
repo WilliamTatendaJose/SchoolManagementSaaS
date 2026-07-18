@@ -9,10 +9,12 @@ namespace SMS.Application.Features.Fees.Commands;
 public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCommand, Result<InvoiceGenerationResultDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public GenerateInvoicesCommandHandler(IApplicationDbContext context)
+    public GenerateInvoicesCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<InvoiceGenerationResultDto>> Handle(GenerateInvoicesCommand request, CancellationToken cancellationToken)
@@ -79,8 +81,13 @@ public class GenerateInvoicesCommandHandler : IRequestHandler<GenerateInvoicesCo
         var arrearsByStudent = await BuildArrearsMapAsync(request, cohortIds, cancellationToken);
 
         var year = DateTime.UtcNow.Year;
+        var tenantId = _currentUserService.TenantId;
+
+        // IgnoreQueryFilters: a soft-deleted invoice's number must still count as "used" so
+        // this run can't regenerate and collide with it.
         var invoiceSequence = await _context.Invoices
-            .CountAsync(i => i.InvoiceDate.Year == year, cancellationToken);
+            .IgnoreQueryFilters()
+            .CountAsync(i => i.TenantId == tenantId && i.InvoiceDate.Year == year, cancellationToken);
 
         var invoicesCreated = 0;
         var studentsSkipped = 0;

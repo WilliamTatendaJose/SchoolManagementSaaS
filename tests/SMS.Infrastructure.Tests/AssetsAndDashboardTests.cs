@@ -35,7 +35,7 @@ public class AssetsAndDashboardTests : IAsyncLifetime
     public async Task Assets_get_a_generated_number_and_appear_in_the_register()
     {
         await using var db = _harness.CreateDbContext();
-        var create = await new CreateAssetCommandHandler(db)
+        var create = await new CreateAssetCommandHandler(db, _harness.CurrentUser)
             .Handle(new CreateAssetCommand { Name = "Projector", Category = "Electronics", PurchasePrice = 450m }, CancellationToken.None);
         create.IsSuccess.Should().BeTrue();
 

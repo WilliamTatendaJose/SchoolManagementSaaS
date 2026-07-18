@@ -1,0 +1,14 @@
+# Development-only image: runs the API via `dotnet watch` against source mounted
+# from the host, so edits rebuild in place instead of requiring an image rebuild.
+# For a production image, build a proper multi-stage Dockerfile instead.
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /src
+
+ENV ASPNETCORE_URLS=http://+:8080 \
+    DOTNET_USE_POLLING_FILE_WATCHER=true \
+    ASPNETCORE_ENVIRONMENT=Development
+
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "watch", "run", "--project", "src/SMS.API/SMS.API.csproj", "--no-launch-profile", "--non-interactive"]

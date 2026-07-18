@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SMS.Application.Interfaces;
 using SMS.Domain.Common;
 using SMS.Domain.Entities;
@@ -110,15 +111,30 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     /// </summary>
     public Guid? CurrentTenantId => _tenantService.GetCurrentTenantId();
 
+    // Npgsql requires DateTimeKind.Utc for "timestamp with time zone" columns (every DateTime
+    // column here, via the Postgres provider's default mapping). Dates coming in over JSON -
+    // e.g. a plain "2014-05-12" date-of-birth from the frontend - deserialize with
+    // Kind=Unspecified, which Npgsql now rejects outright instead of assuming UTC. These
+    // fields are calendar dates/timestamps with no real timezone semantics of their own, so
+    // relabeling (not shifting) to UTC on write is correct; reads from timestamptz already
+    // come back UTC-kind, but SpecifyKind again defensively in case of e.g. DateTime.MinValue.
+    private static readonly ValueConverter<DateTime, DateTime> UtcDateTimeConverter = new(
+        v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+    private static readonly ValueConverter<DateTime?, DateTime?> UtcNullableDateTimeConverter = new(
+        v => v.HasValue && v.Value.Kind != DateTimeKind.Utc ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v,
+        v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        // Apply global tenant filter for all tenant entities
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
+            // Apply global tenant filter for all tenant entities
             if (typeof(ITenantEntity).IsAssignableFrom(entityType.ClrType))
             {
                 var method = typeof(ApplicationDbContext)
@@ -126,6 +142,19 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                     .MakeGenericMethod(entityType.ClrType);
 
                 method.Invoke(this, [modelBuilder]);
+            }
+
+            // Force every DateTime/DateTime? column to be treated as UTC.
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime))
+                {
+                    property.SetValueConverter(UtcDateTimeConverter);
+                }
+                else if (property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(UtcNullableDateTimeConverter);
+                }
             }
         }
     }

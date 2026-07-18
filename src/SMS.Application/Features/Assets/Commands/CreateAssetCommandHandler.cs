@@ -9,10 +9,12 @@ namespace SMS.Application.Features.Assets.Commands;
 public class CreateAssetCommandHandler : IRequestHandler<CreateAssetCommand, Result<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateAssetCommandHandler(IApplicationDbContext context)
+    public CreateAssetCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Guid>> Handle(CreateAssetCommand request, CancellationToken cancellationToken)
@@ -47,7 +49,13 @@ public class CreateAssetCommandHandler : IRequestHandler<CreateAssetCommand, Res
     private async Task<string> GenerateAssetNumberAsync(CancellationToken cancellationToken)
     {
         var year = DateTime.UtcNow.Year;
-        var count = await _context.Assets.CountAsync(a => a.AssetNumber.StartsWith($"AST-{year}-"), cancellationToken) + 1;
+        var tenantId = _currentUserService.TenantId;
+
+        // IgnoreQueryFilters: a soft-deleted/decommissioned asset's number must still count
+        // as "used" so a later create in the same year can't regenerate and collide with it.
+        var count = await _context.Assets
+            .IgnoreQueryFilters()
+            .CountAsync(a => a.TenantId == tenantId && a.AssetNumber.StartsWith($"AST-{year}-"), cancellationToken) + 1;
         return $"AST-{year}-{count:D5}";
     }
 }

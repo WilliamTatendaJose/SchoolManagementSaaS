@@ -79,8 +79,13 @@ public class RecordPaymentCommandHandler : IRequestHandler<RecordPaymentCommand,
     private async Task<string> GenerateReceiptNumberAsync(CancellationToken cancellationToken)
     {
         var year = DateTime.UtcNow.Year;
+        var tenantId = _currentUserService.TenantId;
+
+        // IgnoreQueryFilters: a soft-deleted payment's number must still count as "used" so
+        // a later create in the same year can't regenerate and collide with it.
         var count = await _context.Payments
-            .CountAsync(p => p.PaymentDate.Year == year, cancellationToken) + 1;
+            .IgnoreQueryFilters()
+            .CountAsync(p => p.TenantId == tenantId && p.PaymentDate.Year == year, cancellationToken) + 1;
 
         return $"RCP-{year}-{count:D6}";
     }

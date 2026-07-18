@@ -10,10 +10,12 @@ namespace SMS.Application.Features.Students.Commands;
 public class CreateStudentCommandHandler : IRequestHandler<CreateStudentCommand, Result<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateStudentCommandHandler(IApplicationDbContext context)
+    public CreateStudentCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Guid>> Handle(CreateStudentCommand request, CancellationToken cancellationToken)
@@ -91,9 +93,15 @@ public class CreateStudentCommandHandler : IRequestHandler<CreateStudentCommand,
     private async Task<string> GenerateStudentNumberAsync(CancellationToken cancellationToken)
     {
         var year = DateTime.UtcNow.Year;
+        var tenantId = _currentUserService.TenantId;
+
+        // IgnoreQueryFilters: a soft-deleted student's number must still count as "used" -
+        // otherwise deleting one and creating a new one in the same year regenerates the
+        // same number and collides with the deleted (but still present) row's unique index.
         var count = await _context.Students
-            .CountAsync(s => s.AdmissionDate.Year == year, cancellationToken) + 1;
-        
+            .IgnoreQueryFilters()
+            .CountAsync(s => s.TenantId == tenantId && s.AdmissionDate.Year == year, cancellationToken) + 1;
+
         return $"STU-{year}-{count:D5}";
     }
 }

@@ -55,7 +55,7 @@ public class StaffManagementTests : IAsyncLifetime
     public async Task Creating_staff_generates_a_number_and_rejects_duplicates()
     {
         await using var db = _harness.CreateDbContext();
-        var handler = new CreateStaffCommandHandler(db);
+        var handler = new CreateStaffCommandHandler(db, _harness.CurrentUser);
 
         var first = await handler.Handle(new CreateStaffCommand { UserId = _spareUserId, IsTeacher = false }, CancellationToken.None);
         first.IsSuccess.Should().BeTrue();

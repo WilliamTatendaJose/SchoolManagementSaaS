@@ -116,7 +116,7 @@ public class InvoiceGenerationTests : IAsyncLifetime
         InvoiceGenerationResultDto result;
         await using (var db = _harness.CreateDbContext())
         {
-            var handler = new GenerateInvoicesCommandHandler(db);
+            var handler = new GenerateInvoicesCommandHandler(db, _harness.CurrentUser);
             var outcome = await handler.Handle(new GenerateInvoicesCommand
             {
                 AcademicTermId = _currentTermId,
@@ -169,13 +169,13 @@ public class InvoiceGenerationTests : IAsyncLifetime
 
         await using (var db = _harness.CreateDbContext())
         {
-            var first = await new GenerateInvoicesCommandHandler(db).Handle(command, CancellationToken.None);
+            var first = await new GenerateInvoicesCommandHandler(db, _harness.CurrentUser).Handle(command, CancellationToken.None);
             first.Data!.InvoicesCreated.Should().Be(3);
         }
 
         await using (var db = _harness.CreateDbContext())
         {
-            var second = await new GenerateInvoicesCommandHandler(db).Handle(command, CancellationToken.None);
+            var second = await new GenerateInvoicesCommandHandler(db, _harness.CurrentUser).Handle(command, CancellationToken.None);
             second.Data!.InvoicesCreated.Should().Be(0);
             second.Data!.StudentsSkipped.Should().Be(3);
         }

@@ -9,10 +9,12 @@ namespace SMS.Application.Features.Finance.Commands;
 public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand, Result<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateInvoiceCommandHandler(IApplicationDbContext context)
+    public CreateInvoiceCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Guid>> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
@@ -66,8 +68,13 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
     private async Task<string> GenerateInvoiceNumberAsync(CancellationToken cancellationToken)
     {
         var year = DateTime.UtcNow.Year;
+        var tenantId = _currentUserService.TenantId;
+
+        // IgnoreQueryFilters: a soft-deleted invoice's number must still count as "used" so
+        // a later create in the same year can't regenerate and collide with it.
         var count = await _context.Invoices
-            .CountAsync(i => i.InvoiceDate.Year == year, cancellationToken) + 1;
+            .IgnoreQueryFilters()
+            .CountAsync(i => i.TenantId == tenantId && i.InvoiceDate.Year == year, cancellationToken) + 1;
 
         return $"INV-{year}-{count:D6}";
     }

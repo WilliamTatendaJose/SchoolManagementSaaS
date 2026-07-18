@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "@S773447131"
+      POSTGRES_DB: sms_db_dev
+    ports:
+      # 5432 is remapped to 5433 on the host: Windows' native PostgreSQL service
+      # (installed separately) already owns 5432, and Docker Desktop's port
+      # forwarding silently no-ops rather than erroring when that happens.
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: src/SMS.API/Dockerfile.dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sms_db_dev;Username=postgres;Password=@S773447131;SslMode=Disable"
+    ports:
+      - "59584:8080"
+    volumes:
+      - .:/src
+      # Anonymous volumes so container-side build output isn't clobbered by (or
+      # doesn't clobber) the host's own bin/obj from local IDE builds.
+      - /src/src/SMS.API/bin
+      - /src/src/SMS.API/obj
+      - /src/src/SMS.Application/bin
+      - /src/src/SMS.Application/obj
+      - /src/src/SMS.Domain/bin
+      - /src/src/SMS.Domain/obj
+      - /src/src/SMS.Infrastructure/bin
+      - /src/src/SMS.Infrastructure/obj
+      # Persist the NuGet package cache across container recreations so restore
+      # doesn't redownload everything every time.
+      - nuget-cache:/root/.nuget/packages
+
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      # The Vite proxy (vite.config.ts) forwards /api to this instead of localhost,
+      # since "localhost" inside the web container would mean the container itself.
+      VITE_API_PROXY_TARGET: "http://api:8080"
+    depends_on:
+      - api
+    ports:
+      # 5173 is remapped to 5180 on the host: something else (an unrelated project's
+      # dev server) already owns 5173 here, and Docker's port forwarding silently
+      # no-ops rather than erroring when that happens - same story as postgres above.
+      - "5180:5173"
+    volumes:
+      - ./src/SMS.Web:/app
+      - web-node-modules:/app/node_modules
+
+volumes:
+  postgres-data:
+  web-node-modules:
+  nuget-cache:

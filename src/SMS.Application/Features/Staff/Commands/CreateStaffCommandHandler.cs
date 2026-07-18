@@ -9,10 +9,12 @@ namespace SMS.Application.Features.Staff.Commands;
 public class CreateStaffCommandHandler : IRequestHandler<CreateStaffCommand, Result<Guid>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateStaffCommandHandler(IApplicationDbContext context)
+    public CreateStaffCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<Guid>> Handle(CreateStaffCommand request, CancellationToken cancellationToken)
@@ -49,7 +51,13 @@ public class CreateStaffCommandHandler : IRequestHandler<CreateStaffCommand, Res
     private async Task<string> GenerateStaffNumberAsync(CancellationToken cancellationToken)
     {
         var year = DateTime.UtcNow.Year;
-        var count = await _context.Staff.CountAsync(s => s.StaffNumber.StartsWith($"STAFF-{year}-"), cancellationToken) + 1;
+        var tenantId = _currentUserService.TenantId;
+
+        // IgnoreQueryFilters: a soft-deleted staff member's number must still count as "used"
+        // so a later create in the same year can't regenerate and collide with it.
+        var count = await _context.Staff
+            .IgnoreQueryFilters()
+            .CountAsync(s => s.TenantId == tenantId && s.StaffNumber.StartsWith($"STAFF-{year}-"), cancellationToken) + 1;
         return $"STAFF-{year}-{count:D5}";
     }
 }
