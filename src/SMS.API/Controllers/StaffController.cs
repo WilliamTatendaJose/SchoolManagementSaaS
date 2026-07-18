@@ -50,6 +50,14 @@ public class StaffController : BaseApiController
         return result.IsSuccess ? NoContent() : BadRequest(result.Error);
     }
 
+    [HttpDelete("{id:guid}")]
+    [RequirePermission(Permissions.StaffDelete)]
+    public async Task<IActionResult> DeleteStaff(Guid id)
+    {
+        var result = await Mediator.Send(new DeleteStaffCommand(id));
+        return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+    }
+
     [HttpPost("{id:guid}/subjects")]
     [RequirePermission(Permissions.StaffEdit)]
     public async Task<IActionResult> AssignSubject(Guid id, [FromBody] AssignSubjectToTeacherCommand command)

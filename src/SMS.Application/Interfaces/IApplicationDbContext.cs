@@ -57,6 +57,7 @@ public interface IApplicationDbContext
     DbSet<Payment> Payments { get; }
     DbSet<PaymentPlan> PaymentPlans { get; }
     DbSet<Installment> Installments { get; }
+    DbSet<StudentAccountTransaction> StudentAccountTransactions { get; }
     
     // Communication
     DbSet<Message> Messages { get; }

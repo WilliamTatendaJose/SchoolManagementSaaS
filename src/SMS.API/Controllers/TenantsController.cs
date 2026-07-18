@@ -44,7 +44,11 @@ public class TenantsController : BaseApiController
                 SubscriptionPlan = t.SubscriptionPlan.ToString(),
                 MaxStudents = t.MaxStudents,
                 SubscriptionEndDate = t.SubscriptionEndDate,
-                CreatedAt = t.CreatedAt
+                CreatedAt = t.CreatedAt,
+                HasLmsModule = t.HasLmsModule,
+                HasTransportModule = t.HasTransportModule,
+                HasHostelModule = t.HasHostelModule,
+                HasLibraryModule = t.HasLibraryModule
             })
             .ToListAsync();
 
@@ -73,6 +77,9 @@ public class TenantsController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> CreateTenant([FromBody] CreateTenantRequest request)
     {
+        if (!Enum.TryParse<SubscriptionPlan>(request.SubscriptionPlan ?? "Basic", out var plan))
+            return BadRequest($"Invalid subscription plan: {request.SubscriptionPlan}");
+
         var tenant = new Tenant
         {
             Name = request.Name,
@@ -83,7 +90,7 @@ public class TenantsController : BaseApiController
             City = request.City,
             Country = request.Country ?? "Zimbabwe",
             Status = TenantStatus.Active,
-            SubscriptionPlan = Enum.Parse<SubscriptionPlan>(request.SubscriptionPlan ?? "Basic"),
+            SubscriptionPlan = plan,
             MaxStudents = request.MaxStudents ?? 100,
             SubscriptionStartDate = DateTime.UtcNow,
             SubscriptionEndDate = DateTime.UtcNow.AddMonths(12)
@@ -101,12 +108,60 @@ public class TenantsController : BaseApiController
     [HttpPatch("{id:guid}/status")]
     public async Task<IActionResult> UpdateTenantStatus(Guid id, [FromBody] UpdateTenantStatusRequest request)
     {
+        if (!Enum.TryParse<TenantStatus>(request.Status, out var status))
+            return BadRequest($"Invalid status: {request.Status}");
+
         var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == id);
 
         if (tenant == null)
             return NotFound();
 
-        tenant.Status = Enum.Parse<TenantStatus>(request.Status);
+        tenant.Status = status;
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Update a tenant's subscription plan and seat count. SuperAdmin only - a school
+    /// cannot upgrade or extend its own subscription via SettingsController.
+    /// </summary>
+    [HttpPut("{id:guid}/subscription")]
+    public async Task<IActionResult> UpdateTenantSubscription(Guid id, [FromBody] UpdateTenantSubscriptionRequest request)
+    {
+        if (!Enum.TryParse<SubscriptionPlan>(request.SubscriptionPlan, out var plan))
+            return BadRequest($"Invalid subscription plan: {request.SubscriptionPlan}");
+
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == id);
+        if (tenant == null)
+            return NotFound();
+
+        tenant.SubscriptionPlan = plan;
+        tenant.MaxStudents = request.MaxStudents;
+        tenant.SubscriptionEndDate = request.SubscriptionEndDate;
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Switch a tenant's optional feature modules on or off. SuperAdmin only - this is the
+    /// sole way a module becomes available to a school; SettingsController exposes these
+    /// flags read-only.
+    /// </summary>
+    [HttpPut("{id:guid}/modules")]
+    public async Task<IActionResult> UpdateTenantModules(Guid id, [FromBody] UpdateTenantModulesRequest request)
+    {
+        var tenant = await _context.Tenants.FirstOrDefaultAsync(t => t.Id == id);
+        if (tenant == null)
+            return NotFound();
+
+        tenant.HasLmsModule = request.HasLmsModule;
+        tenant.HasTransportModule = request.HasTransportModule;
+        tenant.HasHostelModule = request.HasHostelModule;
+        tenant.HasLibraryModule = request.HasLibraryModule;
+
         await _context.SaveChangesAsync();
 
         return NoContent();
@@ -125,6 +180,25 @@ public record TenantDto
     public int MaxStudents { get; init; }
     public DateTime? SubscriptionEndDate { get; init; }
     public DateTime CreatedAt { get; init; }
+    public bool HasLmsModule { get; init; }
+    public bool HasTransportModule { get; init; }
+    public bool HasHostelModule { get; init; }
+    public bool HasLibraryModule { get; init; }
+}
+
+public record UpdateTenantSubscriptionRequest
+{
+    public string SubscriptionPlan { get; init; } = string.Empty;
+    public int MaxStudents { get; init; }
+    public DateTime? SubscriptionEndDate { get; init; }
+}
+
+public record UpdateTenantModulesRequest
+{
+    public bool HasLmsModule { get; init; }
+    public bool HasTransportModule { get; init; }
+    public bool HasHostelModule { get; init; }
+    public bool HasLibraryModule { get; init; }
 }
 
 public record CreateTenantRequest

@@ -16,8 +16,11 @@ public record AssessmentDto
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; }
+    public Guid SubjectId { get; init; }
     public string SubjectName { get; init; } = string.Empty;
+    public Guid ClassId { get; init; }
     public string ClassName { get; init; } = string.Empty;
+    public Guid AcademicTermId { get; init; }
     public string TermName { get; init; } = string.Empty;
     public string AssessmentType { get; init; } = string.Empty;
     public decimal MaxScore { get; init; }

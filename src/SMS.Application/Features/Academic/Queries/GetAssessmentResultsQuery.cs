@@ -13,6 +13,7 @@ public record AssessmentResultsDto
     public Guid AssessmentId { get; init; }
     public string AssessmentName { get; init; } = string.Empty;
     public string SubjectName { get; init; } = string.Empty;
+    public Guid ClassId { get; init; }
     public string ClassName { get; init; } = string.Empty;
     public decimal MaxScore { get; init; }
     public bool IsPublished { get; init; }

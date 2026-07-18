@@ -26,6 +26,11 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Res
 
     public async Task<Result<MessageDispatchResultDto>> Handle(SendMessageCommand request, CancellationToken cancellationToken)
     {
+        if (!Enum.TryParse<MessageAudience>(request.Audience, out var audience))
+        {
+            return Result<MessageDispatchResultDto>.Failure($"Invalid audience '{request.Audience}'");
+        }
+
         var channel = _channels.FirstOrDefault(c => c.Channel == request.Channel);
         if (channel == null)
         {
@@ -37,7 +42,7 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Res
             return Result<MessageDispatchResultDto>.Failure("No authenticated user");
         }
 
-        var studentIds = await ResolveStudentIdsAsync(request, cancellationToken);
+        var studentIds = await ResolveStudentIdsAsync(request, audience, cancellationToken);
         if (studentIds.Count == 0)
         {
             return Result<MessageDispatchResultDto>.Failure("No students matched the selected audience");
@@ -55,8 +60,8 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Res
             Content = request.Content,
             MessageType = MessageTypes.Announcement,
             Channel = request.Channel,
-            RecipientType = request.Audience.ToString(),
-            ClassId = request.Audience == MessageAudience.Class ? request.ClassId : null,
+            RecipientType = audience.ToString(),
+            ClassId = audience == MessageAudience.Class ? request.ClassId : null,
             ScheduledAt = request.ScheduledAt,
             CreatedByUserId = userId,
             Status = MessageStatuses.Draft
@@ -85,9 +90,9 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Res
         });
     }
 
-    private async Task<List<Guid>> ResolveStudentIdsAsync(SendMessageCommand request, CancellationToken cancellationToken)
+    private async Task<List<Guid>> ResolveStudentIdsAsync(SendMessageCommand request, MessageAudience audience, CancellationToken cancellationToken)
     {
-        switch (request.Audience)
+        switch (audience)
         {
             case MessageAudience.SpecificStudents:
                 return request.StudentIds?.Distinct().ToList() ?? [];

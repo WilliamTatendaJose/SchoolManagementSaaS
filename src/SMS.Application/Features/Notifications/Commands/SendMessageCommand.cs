@@ -19,7 +19,14 @@ public record SendMessageCommand : IRequest<Result<MessageDispatchResultDto>>
     public string Channel { get; init; } = MessageChannels.Sms;
     public string Subject { get; init; } = string.Empty;
     public string Content { get; init; } = string.Empty;
-    public MessageAudience Audience { get; init; }
+
+    /// <summary>
+    /// One of <see cref="MessageAudience"/>'s names, as a string - matching this project's
+    /// convention of never binding a real enum type on a request DTO (there's no
+    /// JsonStringEnumConverter registered, so ASP.NET's default JSON binding only accepts
+    /// enum ordinals, not names, which no API client should have to know about).
+    /// </summary>
+    public string Audience { get; init; } = string.Empty;
     public List<Guid>? StudentIds { get; init; }
     public Guid? ClassId { get; init; }
 

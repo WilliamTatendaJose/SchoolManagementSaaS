@@ -38,8 +38,11 @@ export default defineConfig({
       allow: [path.resolve(__dirname, '..', '..')],
     },
     proxy: {
+      // Overridable so the same config works running natively (API on localhost)
+      // and inside docker-compose (API reachable by its service name on the
+      // compose network, where "localhost" would mean the container itself).
       '/api': {
-        target: 'http://localhost:59584',
+        target: process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:59584',
         changeOrigin: true,
       },
     },

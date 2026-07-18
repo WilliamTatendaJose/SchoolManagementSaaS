@@ -1191,9 +1191,10 @@ namespace SMS.Infrastructure.Migrations
                     b.HasIndex("TenantId");
 
                     b.HasIndex("UserId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
 
-                    b.ToTable("Guardians");
+                    b.ToTable("Guardians", (string)null);
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.House", b =>
@@ -2184,9 +2185,10 @@ namespace SMS.Infrastructure.Migrations
                     b.HasIndex("TenantId");
 
                     b.HasIndex("UserId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
 
-                    b.ToTable("Staff");
+                    b.ToTable("Staff", (string)null);
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.Stream", b =>
@@ -2366,6 +2368,72 @@ namespace SMS.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Students", (string)null);
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.StudentAccountTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentAccountTransactions", (string)null);
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.StudentGuardian", b =>
@@ -3671,6 +3739,31 @@ namespace SMS.Infrastructure.Migrations
                     b.Navigation("RouteStop");
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.StudentAccountTransaction", b =>
+                {
+                    b.HasOne("SMS.Domain.Entities.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SMS.Domain.Entities.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SMS.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Payment");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.StudentGuardian", b =>

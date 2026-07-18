@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SMS.Application.Common.Models;
 using SMS.Application.Interfaces;
 
@@ -8,12 +9,16 @@ namespace SMS.Application.Features.Lms.Queries;
 public class GetAssignmentSubmissionsQueryHandler : IRequestHandler<GetAssignmentSubmissionsQuery, Result<List<AssignmentSubmissionDto>>>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IFileStorageService _fileStorage;
+    // Resolved lazily (not constructor-injected): building a live IFileStorageService
+    // constructs the AWS S3 client, which eagerly resolves AWS credentials and can hang
+    // for 15-30s before failing wherever they aren't configured. Most submissions have
+    // no attachment, so that cost/failure must not be paid on every list fetch.
+    private readonly IServiceProvider _serviceProvider;
 
-    public GetAssignmentSubmissionsQueryHandler(IApplicationDbContext context, IFileStorageService fileStorage)
+    public GetAssignmentSubmissionsQueryHandler(IApplicationDbContext context, IServiceProvider serviceProvider)
     {
         _context = context;
-        _fileStorage = fileStorage;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task<Result<List<AssignmentSubmissionDto>>> Handle(GetAssignmentSubmissionsQuery request, CancellationToken cancellationToken)
@@ -43,6 +48,10 @@ public class GetAssignmentSubmissionsQueryHandler : IRequestHandler<GetAssignmen
             })
             .ToListAsync(cancellationToken);
 
+        var fileStorage = submissions.Any(s => s.AttachmentKey != null)
+            ? _serviceProvider.GetRequiredService<IFileStorageService>()
+            : null;
+
         var result = submissions
             .Select(s => new AssignmentSubmissionDto
             {
@@ -52,7 +61,7 @@ public class GetAssignmentSubmissionsQueryHandler : IRequestHandler<GetAssignmen
                 SubmittedAt = s.SubmittedAt,
                 Comment = s.Comment,
                 AttachmentFileName = s.AttachmentFileName,
-                AttachmentUrl = s.AttachmentKey != null ? _fileStorage.GetFileUrl(s.AttachmentKey) : null,
+                AttachmentUrl = s.AttachmentKey != null ? fileStorage!.GetFileUrl(s.AttachmentKey) : null,
                 Grade = s.Grade,
                 Feedback = s.Feedback,
                 Status = s.Status

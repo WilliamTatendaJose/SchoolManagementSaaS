@@ -1,10 +1,12 @@
-import { GraduationCap } from 'lucide-react'
+import { GraduationCap, Lock } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { useAuthStore } from '../../auth/authStore'
 import { navGroups } from './navConfig'
 
 export function Sidebar() {
   const hasPermission = useAuthStore((s) => s.hasPermission)
+  const hasRole = useAuthStore((s) => s.hasRole)
+  const hasModule = useAuthStore((s) => s.hasModule)
   const tenantName = useAuthStore((s) => s.tenantName)
 
   return (
@@ -23,7 +25,9 @@ export function Sidebar() {
 
       <div className="scroll-slim flex-1 space-y-6 overflow-y-auto px-3 pb-6 pt-2">
         {navGroups.map((group) => {
-          const visible = group.items.filter((item) => !item.permission || hasPermission(item.permission))
+          const visible = group.items.filter(
+            (item) => (!item.permission || hasPermission(item.permission)) && (!item.role || hasRole(item.role)),
+          )
           if (visible.length === 0) return null
 
           return (
@@ -34,6 +38,7 @@ export function Sidebar() {
               <ul className="space-y-0.5">
                 {visible.map((item) => {
                   const Icon = item.icon
+                  const locked = !!item.module && !hasModule(item.module)
                   return (
                     <li key={item.path}>
                       <NavLink
@@ -56,7 +61,10 @@ export function Sidebar() {
                               ].join(' ')}
                               strokeWidth={2}
                             />
-                            <span className="truncate">{item.label}</span>
+                            <span className="flex-1 truncate">{item.label}</span>
+                            {locked && (
+                              <Lock className="h-3.5 w-3.5 shrink-0 text-slate-600" strokeWidth={2} aria-label="Requires upgrade" />
+                            )}
                           </>
                         )}
                       </NavLink>

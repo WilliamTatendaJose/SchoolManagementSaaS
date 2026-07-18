@@ -64,7 +64,7 @@ public static class DefaultRoles
                 Permissions.FinanceView, Permissions.FeeStructuresView, Permissions.FeeStructuresManage, Permissions.InvoicesCreate, Permissions.InvoicesEdit, Permissions.PaymentsRecord, Permissions.FinanceReport,
                 Permissions.MessagesView, Permissions.MessagesSend, Permissions.MessagesBulk,
                 Permissions.StaffView, Permissions.StaffCreate, Permissions.StaffEdit, Permissions.StaffDelete, Permissions.LeaveApprove,
-                Permissions.UsersView, Permissions.UsersCreate, Permissions.UsersEdit,
+                Permissions.UsersView, Permissions.UsersCreate, Permissions.UsersEdit, Permissions.RolesManage,
                 Permissions.SettingsView, Permissions.SettingsManage,
                 Permissions.HostelView, Permissions.HostelManage,
                 Permissions.TransportView, Permissions.TransportManage,

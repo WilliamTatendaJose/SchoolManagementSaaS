@@ -72,6 +72,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<PaymentPlan> PaymentPlans => Set<PaymentPlan>();
     public DbSet<Installment> Installments => Set<Installment>();
+    public DbSet<StudentAccountTransaction> StudentAccountTransactions => Set<StudentAccountTransaction>();
 
     // Communication
     public DbSet<Message> Messages => Set<Message>();

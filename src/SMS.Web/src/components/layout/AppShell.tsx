@@ -1,11 +1,14 @@
 import { Outlet } from 'react-router-dom'
 import { useProfile } from '../../auth/useProfile'
+import { useTenantFeatures } from '../../auth/useTenantFeatures'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 
 export function AppShell() {
-  // Keeps the profile (roles/permissions) fresh for the whole authenticated app.
+  // Keeps the profile (roles/permissions) and the tenant's enabled modules fresh
+  // for the whole authenticated app.
   useProfile()
+  useTenantFeatures()
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950">

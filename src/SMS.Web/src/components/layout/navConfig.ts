@@ -18,8 +18,11 @@ import {
   BarChart3,
   UsersRound,
   Settings,
+  Layers,
+  Building2,
   type LucideIcon,
 } from 'lucide-react'
+import type { FeatureModule } from '../../api/types'
 
 export interface NavItem {
   label: string
@@ -27,6 +30,13 @@ export interface NavItem {
   icon: LucideIcon
   /** Omit to show the item to every authenticated user regardless of permissions. */
   permission?: string
+  /** Gates on role membership instead of a permission - for platform-level areas
+   *  (e.g. Tenants) that TenantsController itself checks by role, not permission. */
+  role?: string
+  /** Optional subscription feature module this item requires. Unlike `permission`/`role`,
+   *  this does NOT hide the item - it's shown locked so the user can discover and request
+   *  an upgrade, matching FeatureRoute's Paywall behavior at the route level. */
+  module?: FeatureModule
 }
 
 export interface NavGroup {
@@ -51,10 +61,11 @@ export const navGroups: NavGroup[] = [
     label: 'Academic',
     items: [
       { label: 'Enrollments', path: '/enrollments', icon: ClipboardList, permission: 'enrollments.view' },
+      { label: 'Classes & subjects', path: '/academic-setup', icon: Layers, permission: 'classes.view' },
       { label: 'Attendance', path: '/attendance', icon: CalendarCheck, permission: 'attendance.view' },
       { label: 'Timetable', path: '/timetable', icon: CalendarClock, permission: 'timetable.view' },
       { label: 'Assessments & results', path: '/results', icon: GraduationCap, permission: 'results.view' },
-      { label: 'Assignments', path: '/assignments', icon: BookOpenCheck, permission: 'assignments.view' },
+      { label: 'Assignments', path: '/assignments', icon: BookOpenCheck, permission: 'assignments.view', module: 'lms' },
     ],
   },
   {
@@ -62,9 +73,9 @@ export const navGroups: NavGroup[] = [
     items: [
       { label: 'Fees & invoices', path: '/finance', icon: Wallet, permission: 'finance.view' },
       { label: 'Discipline', path: '/discipline', icon: ShieldAlert, permission: 'discipline.view' },
-      { label: 'Boarding', path: '/hostel', icon: BedDouble, permission: 'hostel.view' },
-      { label: 'Transport', path: '/transport', icon: Bus, permission: 'transport.view' },
-      { label: 'Library', path: '/library', icon: Library, permission: 'library.view' },
+      { label: 'Boarding', path: '/hostel', icon: BedDouble, permission: 'hostel.view', module: 'hostel' },
+      { label: 'Transport', path: '/transport', icon: Bus, permission: 'transport.view', module: 'transport' },
+      { label: 'Library', path: '/library', icon: Library, permission: 'library.view', module: 'library' },
       { label: 'Assets', path: '/assets', icon: Package, permission: 'assets.view' },
     ],
   },
@@ -72,10 +83,14 @@ export const navGroups: NavGroup[] = [
     label: 'Admin',
     items: [
       { label: 'Messages', path: '/messages', icon: MessageSquare, permission: 'messages.view' },
-      { label: 'Reports', path: '/reports', icon: BarChart3, permission: 'reports.dashboard' },
+      { label: 'Reports', path: '/reports', icon: BarChart3, permission: 'finance.report' },
       { label: 'Users & roles', path: '/users', icon: UsersRound, permission: 'users.view' },
       { label: 'Settings', path: '/settings', icon: Settings, permission: 'settings.view' },
     ],
+  },
+  {
+    label: 'Platform',
+    items: [{ label: 'Schools', path: '/tenants', icon: Building2, role: 'SuperAdmin' }],
   },
 ]
 

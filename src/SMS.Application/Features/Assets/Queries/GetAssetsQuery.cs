@@ -19,8 +19,10 @@ public record AssetDto
     public string AssetNumber { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public string Category { get; init; } = string.Empty;
+    public string? Description { get; init; }
     public string? Location { get; init; }
     public decimal? PurchasePrice { get; init; }
+    public DateTime? PurchaseDate { get; init; }
     public string Condition { get; init; } = string.Empty;
     public Guid? AssignedToId { get; init; }
     public string? AssignedToName { get; init; }

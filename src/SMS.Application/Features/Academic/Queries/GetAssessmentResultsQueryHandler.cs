@@ -78,6 +78,7 @@ public class GetAssessmentResultsQueryHandler : IRequestHandler<GetAssessmentRes
             AssessmentId = assessment.Id,
             AssessmentName = assessment.Name,
             SubjectName = assessment.Subject.Name,
+            ClassId = assessment.ClassId,
             ClassName = assessment.Class.Name,
             MaxScore = assessment.MaxScore,
             IsPublished = assessment.IsPublished,
