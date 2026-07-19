@@ -53,6 +53,42 @@ public class AssignmentsController : BaseApiController
         return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
     }
 
+    /// <summary>
+    /// Assignment detail with the full class roster: who submitted, who was graded, and
+    /// who is still missing - plus a progress summary. One call, no client-side joins.
+    /// </summary>
+    [HttpGet("{assignmentId:guid}/roster")]
+    [RequirePermission(Permissions.AssignmentsView)]
+    public async Task<IActionResult> GetRoster(Guid assignmentId)
+    {
+        var result = await Mediator.Send(new GetAssignmentRosterQuery(assignmentId));
+        return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
+    }
+
+    /// <summary>Grade a whole class in one save (the mark-sheet workflow).</summary>
+    [HttpPost("{assignmentId:guid}/grades")]
+    [RequirePermission(Permissions.AssignmentsManage)]
+    public async Task<IActionResult> BulkGrade(Guid assignmentId, [FromBody] BulkGradeAssignmentSubmissionsCommand command)
+    {
+        if (assignmentId != command.AssignmentId)
+            return BadRequest("ID mismatch");
+
+        var result = await Mediator.Send(command);
+        return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+    }
+
+    /// <summary>Message the guardians of every student who has not yet submitted.</summary>
+    [HttpPost("{assignmentId:guid}/remind")]
+    [RequirePermission(Permissions.AssignmentsManage)]
+    public async Task<IActionResult> RemindNonSubmitters(Guid assignmentId, [FromBody] RemindNonSubmittersCommand command)
+    {
+        if (assignmentId != command.AssignmentId)
+            return BadRequest("ID mismatch");
+
+        var result = await Mediator.Send(command);
+        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+    }
+
     [HttpPost("{assignmentId:guid}/submissions")]
     [RequirePermission(Permissions.AssignmentsManage)]
     public async Task<IActionResult> RecordSubmission(Guid assignmentId, [FromForm] RecordSubmissionRequest request)

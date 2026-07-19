@@ -60,7 +60,7 @@ public class MessageOutboxTests : IAsyncLifetime
             {
                 Channel = MessageChannels.Sms,
                 Content = "Reminder: sports day tomorrow.",
-                Audience = MessageAudience.SpecificStudents,
+                Audience = nameof(MessageAudience.SpecificStudents),
                 StudentIds = [_studentId],
                 ScheduledAt = DateTime.UtcNow.AddHours(2)
             }, CancellationToken.None);
@@ -117,7 +117,7 @@ public class MessageOutboxTests : IAsyncLifetime
         {
             Channel = MessageChannels.Sms,
             Content = "Immediate notice.",
-            Audience = MessageAudience.SpecificStudents,
+            Audience = nameof(MessageAudience.SpecificStudents),
             StudentIds = [_studentId]
         }, CancellationToken.None);
 

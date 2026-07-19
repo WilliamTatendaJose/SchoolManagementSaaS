@@ -1,4 +1,5 @@
 using MediatR;
+using SMS.Application.Common.Messaging;
 using SMS.Application.Common.Models;
 
 namespace SMS.Application.Features.Discipline.Commands;
@@ -16,4 +17,7 @@ public record CreateDisciplineRecordCommand : IRequest<Result<Guid>>
     public int? DemeritsAwarded { get; init; }
     public int? MeritsAwarded { get; init; }
     public bool NotifyGuardian { get; init; }
+    /// <summary>Channel for the guardian notification, when requested. Ignored when
+    /// NotifyGuardian is false.</summary>
+    public string Channel { get; init; } = MessageChannels.Sms;
 }

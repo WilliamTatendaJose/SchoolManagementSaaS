@@ -14,7 +14,7 @@ public class SendMessageCommandValidatorTests
         var command = new SendMessageCommand
         {
             Content = "Hello",
-            Audience = MessageAudience.SpecificStudents,
+            Audience = nameof(MessageAudience.SpecificStudents),
             StudentIds = [Guid.NewGuid()]
         };
 
@@ -27,7 +27,7 @@ public class SendMessageCommandValidatorTests
         var command = new SendMessageCommand
         {
             Content = "",
-            Audience = MessageAudience.AllActiveStudents
+            Audience = nameof(MessageAudience.AllActiveStudents)
         };
 
         _validator.TestValidate(command).ShouldHaveValidationErrorFor(x => x.Content);
@@ -39,7 +39,7 @@ public class SendMessageCommandValidatorTests
         var command = new SendMessageCommand
         {
             Content = "Hello",
-            Audience = MessageAudience.SpecificStudents,
+            Audience = nameof(MessageAudience.SpecificStudents),
             StudentIds = []
         };
 
@@ -52,7 +52,7 @@ public class SendMessageCommandValidatorTests
         var command = new SendMessageCommand
         {
             Content = "Hello",
-            Audience = MessageAudience.Class
+            Audience = nameof(MessageAudience.Class)
         };
 
         _validator.TestValidate(command).ShouldHaveValidationErrorFor(x => x.ClassId);

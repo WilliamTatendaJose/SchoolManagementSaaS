@@ -30,12 +30,12 @@ export function Drawer({ open, onClose, title, description, children, footer }: 
   return createPortal(
     <div className="fixed inset-0 z-50 flex justify-end">
       <div
-        className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] animate-[fadeIn_150ms_ease-out]"
+        className="absolute inset-0 bg-slate-950/30 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
         onClick={onClose}
         aria-hidden
       />
-      <div className="relative flex h-full w-full max-w-lg flex-col bg-white shadow-2xl animate-[slideIn_200ms_ease-out] dark:bg-slate-900">
-        <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+      <div className="relative flex h-full w-full max-w-lg flex-col border-l border-white/20 bg-white/85 shadow-2xl backdrop-blur-2xl animate-[slideIn_200ms_ease-out] dark:border-white/10 dark:bg-slate-900/85">
+        <div className="flex items-start justify-between border-b border-slate-200/70 px-6 py-5 dark:border-white/10">
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
             {description && (
@@ -53,7 +53,7 @@ export function Drawer({ open, onClose, title, description, children, footer }: 
         <div className="scroll-slim flex-1 overflow-y-auto px-6 py-5">{children}</div>
 
         {footer && (
-          <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-3 border-t border-slate-200/70 px-6 py-4 dark:border-white/10">
             {footer}
           </div>
         )}

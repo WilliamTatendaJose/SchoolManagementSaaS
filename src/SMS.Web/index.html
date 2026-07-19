@@ -5,6 +5,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>School Management SaaS</title>
+    <script>
+      // Applies the saved theme class before first paint, so there's no flash of the
+      // wrong theme. Mirrors the 'sms-theme' zustand-persist store in src/theme/themeStore.ts -
+      // keep the storage key and shape in sync with that file.
+      (function () {
+        try {
+          var raw = localStorage.getItem('sms-theme');
+          var mode = raw ? JSON.parse(raw).state.mode : 'system';
+          var dark = mode === 'dark' || (mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -67,7 +67,7 @@ public class CreateDisciplineRecordCommandHandler : IRequestHandler<CreateDiscip
     private async Task NotifyGuardianAsync(
         Student student, CreateDisciplineRecordCommand request, DisciplineRecord record, CancellationToken cancellationToken)
     {
-        var channel = _channels.FirstOrDefault(c => c.Channel == MessageChannels.Sms);
+        var channel = _channels.FirstOrDefault(c => c.Channel == request.Channel);
         if (channel == null || _currentUser.UserId is not { } userId)
         {
             return;
@@ -88,14 +88,17 @@ public class CreateDisciplineRecordCommandHandler : IRequestHandler<CreateDiscip
             Subject = "Discipline notice",
             Content = content,
             MessageType = MessageTypes.Discipline,
-            Channel = MessageChannels.Sms,
+            Channel = request.Channel,
             RecipientType = "Guardian",
             CreatedByUserId = userId,
             Status = MessageStatuses.Draft
         };
         _context.Messages.Add(message);
 
-        var targets = recipients.Select(r => (r, content)).ToList();
+        // Only WhatsApp acts on TemplateParams (see IMessageChannel.SendTemplateAsync);
+        // SMS ignores them and always sends the freeform `content` above.
+        var templateParams = MessageTemplates.TemplateParams.DisciplineNotice(student.FullName, request.IncidentType, request.IncidentDate);
+        var targets = recipients.Select(r => new DispatchTarget(r, content, templateParams)).ToList();
         await MessageDispatcher.DispatchAsync(channel, message, targets, cancellationToken);
 
         record.GuardianNotified = message.DeliveredCount > 0;

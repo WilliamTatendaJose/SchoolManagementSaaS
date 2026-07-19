@@ -20,5 +20,11 @@ public record AssignmentDto
     public DateTime DueDate { get; init; }
     public string? AttachmentFileName { get; init; }
     public bool IsPublished { get; init; }
+
+    /// <summary>Students who have submitted anything (Submitted, Late or Graded).</summary>
     public int SubmissionCount { get; init; }
+    /// <summary>Of those, how many have been graded.</summary>
+    public int GradedCount { get; init; }
+    /// <summary>Active students currently placed in the assignment's class - the denominator.</summary>
+    public int RosterCount { get; init; }
 }

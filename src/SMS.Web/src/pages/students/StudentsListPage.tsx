@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Users } from 'lucide-react'
+import { Plus, Upload, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchClasses } from '../../api/classes'
@@ -23,6 +23,7 @@ const PAGE_SIZE = 10
 export function StudentsListPage() {
   const navigate = useNavigate()
   const canCreate = useAuthStore((s) => s.hasPermission('students.create'))
+  const canImport = useAuthStore((s) => s.hasPermission('students.import'))
   const [params, setParams] = useSearchParams()
   const [createOpen, setCreateOpen] = useState(false)
 
@@ -68,12 +69,20 @@ export function StudentsListPage() {
         title="Students"
         description={data ? `${data.totalCount} students` : undefined}
         actions={
-          canCreate && (
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4" strokeWidth={2.5} />
-              Add student
-            </Button>
-          )
+          <div className="flex items-center gap-2">
+            {canImport && (
+              <Button variant="secondary" onClick={() => navigate('/students/import')}>
+                <Upload className="h-4 w-4" strokeWidth={2.5} />
+                Import
+              </Button>
+            )}
+            {canCreate && (
+              <Button onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4" strokeWidth={2.5} />
+                Add student
+              </Button>
+            )}
+          </div>
         }
       />
 

@@ -62,7 +62,8 @@ export function LoginPage() {
       const tenant = tenants?.find((t) => t.id === tenantId)
       setTenant(tenantId, tenant?.name ?? '')
       setSession(data.accessToken, data.refreshToken, data.user)
-      navigate('/dashboard', { replace: true })
+      const isParent = data.user?.roles.includes('Parent') ?? false
+      navigate(isParent ? '/portal' : '/dashboard', { replace: true })
     } catch {
       setError('Invalid email or password')
     } finally {

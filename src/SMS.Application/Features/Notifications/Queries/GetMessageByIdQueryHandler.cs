@@ -46,6 +46,7 @@ public class GetMessageByIdQueryHandler : IRequestHandler<GetMessageByIdQuery, R
                 StudentId = r.StudentId,
                 Status = r.Status,
                 DeliveredAt = r.DeliveredAt,
+                ReadAt = r.ReadAt,
                 FailureReason = r.FailureReason
             }).ToList()
         };

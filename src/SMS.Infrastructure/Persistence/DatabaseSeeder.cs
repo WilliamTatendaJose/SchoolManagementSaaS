@@ -18,7 +18,69 @@ public static class DatabaseSeeder
 
         await SeedPermissionsAsync(context);
         await SeedRolesAsync(context);
+        await ReconcileLockedRolePermissionsAsync(context);
         await SeedDefaultTenantAsync(context);
+    }
+
+    /// <summary>
+    /// Forces the household-facing system roles (Parent, Student) to hold exactly the
+    /// permissions <see cref="DefaultRoles"/> declares for them - which is none.
+    ///
+    /// <para><see cref="SeedRolesAsync"/> only runs against an empty roles table, so a
+    /// change to a role's permission set never reaches a database that was seeded before
+    /// the change. These two roles are ownership-scoped in the app (the parent/student
+    /// portal filters by the caller's own Guardian/Student link, not by permission) and
+    /// must never carry a staff "view" permission - e.g. <c>finance.view</c> also gates
+    /// the tenant-wide <c>GET /finance/invoices</c> listing, so granting it to a parent
+    /// would let them read every family's invoices straight from the API. Unlike staff
+    /// roles (which admins may legitimately customise via the Roles screen), these have
+    /// no permissions worth preserving, so it is safe to reconcile them on every startup;
+    /// staff roles are deliberately left untouched.</para>
+    /// </summary>
+    private static async Task ReconcileLockedRolePermissionsAsync(ApplicationDbContext context)
+    {
+        string[] lockedRoleNames = [DefaultRoles.Parent, DefaultRoles.Student];
+        var defaults = DefaultRoles.GetRolePermissions();
+        var permissionIdByCode = await context.Permissions.ToDictionaryAsync(p => p.Code, p => p.Id);
+
+        var changed = false;
+
+        foreach (var roleName in lockedRoleNames)
+        {
+            var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+            if (role == null)
+            {
+                continue;
+            }
+
+            var desiredPermissionIds = (defaults.TryGetValue(roleName, out var codes) ? codes : [])
+                .Where(permissionIdByCode.ContainsKey)
+                .Select(code => permissionIdByCode[code])
+                .ToHashSet();
+
+            var existing = await context.RolePermissions
+                .Where(rp => rp.RoleId == role.Id)
+                .ToListAsync();
+
+            var toRemove = existing.Where(rp => !desiredPermissionIds.Contains(rp.PermissionId)).ToList();
+            if (toRemove.Count > 0)
+            {
+                context.RolePermissions.RemoveRange(toRemove);
+                changed = true;
+            }
+
+            var existingPermissionIds = existing.Select(rp => rp.PermissionId).ToHashSet();
+            foreach (var permissionId in desiredPermissionIds.Where(id => !existingPermissionIds.Contains(id)))
+            {
+                context.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionId = permissionId });
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            await context.SaveChangesAsync();
+        }
     }
 
     private static async Task SeedPermissionsAsync(ApplicationDbContext context)
@@ -34,6 +96,7 @@ public static class DatabaseSeeder
             new() { Name = "Edit Students", Code = Permissions.StudentsEdit, Module = "Students", Description = "Edit student records" },
             new() { Name = "Delete Students", Code = Permissions.StudentsDelete, Module = "Students", Description = "Delete students" },
             new() { Name = "Export Students", Code = Permissions.StudentsExport, Module = "Students", Description = "Export student data" },
+            new() { Name = "Import Students", Code = Permissions.StudentsImport, Module = "Students", Description = "Bulk-import students from a spreadsheet" },
 
             // Guardians
             new() { Name = "View Guardians", Code = Permissions.GuardiansView, Module = "Guardians", Description = "View guardian records" },

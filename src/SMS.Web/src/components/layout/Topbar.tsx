@@ -2,6 +2,7 @@ import { LogOut } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../auth/authStore'
 import { apiClient } from '../../api/client'
+import { ThemeToggle } from '../ui/ThemeToggle'
 import { navItems } from './navConfig'
 
 function initials(firstName?: string, lastName?: string) {
@@ -27,19 +28,27 @@ export function Topbar() {
   }
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white/80 px-8 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200/70 bg-white/70 px-8 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/70">
       <h2 className="text-base font-semibold text-slate-900 dark:text-white">{currentLabel}</h2>
 
       <div className="flex items-center gap-3">
+        <ThemeToggle />
+
+        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" aria-hidden />
+
         {user && (
-          <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate('/profile')}
+            title="My profile"
+            className="flex items-center gap-2.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-900/50 dark:text-brand-300">
               {initials(user.firstName, user.lastName)}
             </div>
             <span className="hidden text-sm font-medium text-slate-700 sm:inline dark:text-slate-300">
               {user.firstName} {user.lastName}
             </span>
-          </div>
+          </button>
         )}
         <button
           onClick={handleLogout}

@@ -28,5 +28,6 @@ public record MessageRecipientDto
     public Guid? StudentId { get; init; }
     public string Status { get; init; } = string.Empty;
     public DateTime? DeliveredAt { get; init; }
+    public DateTime? ReadAt { get; init; }
     public string? FailureReason { get; init; }
 }

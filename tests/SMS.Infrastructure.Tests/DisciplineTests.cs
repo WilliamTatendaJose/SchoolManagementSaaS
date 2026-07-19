@@ -95,6 +95,34 @@ public class DisciplineTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Creating_a_record_with_notify_over_whatsapp_uses_the_template_path()
+    {
+        var channel = new RecordingTemplateChannel();
+
+        await using var db = _harness.CreateDbContext();
+        var handler = new CreateDisciplineRecordCommandHandler(db, [channel], _harness.CurrentUser);
+        var outcome = await handler.Handle(new CreateDisciplineRecordCommand
+        {
+            StudentId = _studentWithGuardianId,
+            IncidentDate = new DateTime(2026, 3, 10),
+            IncidentType = "Late",
+            Description = "Arrived late three times this week.",
+            DemeritsAwarded = 2,
+            NotifyGuardian = true,
+            Channel = MessageChannels.WhatsApp
+        }, CancellationToken.None);
+
+        outcome.IsSuccess.Should().BeTrue();
+        channel.FreeformSends.Should().BeEmpty("a WhatsApp-channel discipline notice must route through the template path");
+        channel.TemplateSends.Should().ContainSingle();
+
+        var send = channel.TemplateSends[0];
+        send.Recipient.Should().Be(GuardianPhone);
+        send.TemplateKey.Should().Be(MessageTypes.Discipline);
+        send.Parameters.Should().Equal("Dee Student", "Late", "10 Mar 2026");
+    }
+
+    [Fact]
     public async Task Creating_a_record_without_notify_does_not_message()
     {
         var channel = new FakeMessageChannel();

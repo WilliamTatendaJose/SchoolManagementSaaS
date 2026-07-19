@@ -75,7 +75,7 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Res
         }
         else
         {
-            var targets = recipients.Select(r => (r, request.Content)).ToList();
+            var targets = recipients.Select(r => new DispatchTarget(r, request.Content)).ToList();
             await MessageDispatcher.DispatchAsync(channel, message, targets, cancellationToken);
         }
 

@@ -96,11 +96,15 @@ public class SendFeeRemindersCommandHandler : IRequestHandler<SendFeeRemindersCo
         _context.Messages.Add(message);
 
         var targets = recipients
-            .Select(r => (r, MessageTemplates.FeeReminder(
-                nameByStudent.GetValueOrDefault(r.StudentId, "your child"),
-                balanceByStudent[r.StudentId],
-                currency,
-                schoolName)))
+            .Select(r =>
+            {
+                var studentName = nameByStudent.GetValueOrDefault(r.StudentId, "your child");
+                var balance = balanceByStudent[r.StudentId];
+                return new DispatchTarget(
+                    r,
+                    MessageTemplates.FeeReminder(studentName, balance, currency, schoolName),
+                    MessageTemplates.TemplateParams.FeeReminder(studentName, balance, currency));
+            })
             .ToList();
 
         await MessageDispatcher.DispatchAsync(channel, message, targets, cancellationToken);

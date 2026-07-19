@@ -28,7 +28,7 @@ public static class DefaultRoles
             [SuperAdmin] = new List<string>
             {
                 // SuperAdmin has all permissions
-                Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsDelete, Permissions.StudentsExport,
+                Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsDelete, Permissions.StudentsExport, Permissions.StudentsImport,
                 Permissions.GuardiansView, Permissions.GuardiansCreate, Permissions.GuardiansEdit, Permissions.GuardiansDelete,
                 Permissions.EnrollmentsView, Permissions.EnrollmentsManage, Permissions.EnrollmentsPromote,
                 Permissions.ClassesView, Permissions.ClassesManage, Permissions.SubjectsView, Permissions.SubjectsManage,
@@ -52,7 +52,7 @@ public static class DefaultRoles
 
             [SchoolAdmin] = new List<string>
             {
-                Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsDelete, Permissions.StudentsExport,
+                Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsDelete, Permissions.StudentsExport, Permissions.StudentsImport,
                 Permissions.GuardiansView, Permissions.GuardiansCreate, Permissions.GuardiansEdit, Permissions.GuardiansDelete,
                 Permissions.EnrollmentsView, Permissions.EnrollmentsManage, Permissions.EnrollmentsPromote,
                 Permissions.ClassesView, Permissions.ClassesManage, Permissions.SubjectsView, Permissions.SubjectsManage,
@@ -76,7 +76,7 @@ public static class DefaultRoles
 
             [HeadTeacher] = new List<string>
             {
-                Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsExport,
+                Permissions.StudentsView, Permissions.StudentsCreate, Permissions.StudentsEdit, Permissions.StudentsExport, Permissions.StudentsImport,
                 Permissions.GuardiansView, Permissions.GuardiansCreate, Permissions.GuardiansEdit,
                 Permissions.EnrollmentsView, Permissions.EnrollmentsManage, Permissions.EnrollmentsPromote,
                 Permissions.ClassesView, Permissions.ClassesManage, Permissions.SubjectsView, Permissions.SubjectsManage,
@@ -118,24 +118,17 @@ public static class DefaultRoles
                 Permissions.ReportsFinance
             },
 
-            [Parent] = new List<string>
-            {
-                Permissions.StudentsView,
-                Permissions.ResultsView,
-                Permissions.AttendanceView,
-                Permissions.FinanceView,
-                Permissions.MessagesView,
-                Permissions.AssignmentsView
-            },
+            // Parent and Student have NO staff permissions. Every staff "View" permission
+            // (StudentsView, FinanceView, ResultsView, MessagesView, ...) gates a *list*
+            // endpoint scoped to the whole tenant (e.g. GET /finance/invoices with no
+            // studentId returns every family's invoices) - granting any of them to a
+            // household-facing role would let a parent page through every other family's
+            // fees, results and messages. The parent/student portal is scoped entirely by
+            // ownership (ParentPortalController checks the caller's own Guardian/Student
+            // link, not a permission), so no permission grant is needed for it to work.
+            [Parent] = [],
 
-            [Student] = new List<string>
-            {
-                Permissions.ResultsView,
-                Permissions.AttendanceView,
-                Permissions.TimetableView,
-                Permissions.MessagesView,
-                Permissions.AssignmentsView
-            },
+            [Student] = [],
 
             [HostelWarden] = new List<string>
             {

@@ -17,7 +17,7 @@ const toneClasses: Record<NonNullable<StatCardProps['tone']>, string> = {
 
 export function StatCard({ label, value, icon: Icon, tone = 'brand', hint }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="group rounded-2xl border border-slate-200/70 bg-white/70 p-5 shadow-sm backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-md hover:shadow-slate-900/5 dark:border-white/10 dark:bg-slate-900/60 dark:hover:bg-slate-900/80 dark:hover:shadow-black/20">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
@@ -26,7 +26,9 @@ export function StatCard({ label, value, icon: Icon, tone = 'brand', hint }: Sta
           </p>
           {hint && <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{hint}</p>}
         </div>
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${toneClasses[tone]}`}>
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 ${toneClasses[tone]}`}
+        >
           <Icon className="h-5 w-5" strokeWidth={2} />
         </div>
       </div>

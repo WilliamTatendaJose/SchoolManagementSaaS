@@ -11,6 +11,7 @@ public static class Permissions
     public const string StudentsEdit = "students.edit";
     public const string StudentsDelete = "students.delete";
     public const string StudentsExport = "students.export";
+    public const string StudentsImport = "students.import";
 
     // Guardian Management
     public const string GuardiansView = "guardians.view";

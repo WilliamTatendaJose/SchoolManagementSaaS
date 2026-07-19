@@ -12,8 +12,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        // Never cache API calls in the service worker; the app's own IndexedDB
-        // sync queue (see src/offline) handles offline tolerance for writes.
+        // Never cache API calls in the service worker. Attendance marking tolerates
+        // offline writes via its own IndexedDB queue (src/offline/attendanceQueue.ts,
+        // flushed by useAttendanceSync) rather than a service-worker background sync -
+        // that queue is currently attendance-only, not a generic write queue for every
+        // endpoint.
         navigateFallbackDenylist: [/^\/api\//],
       },
       manifest: {

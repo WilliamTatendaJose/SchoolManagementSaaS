@@ -109,6 +109,50 @@ export interface StudentDto {
   primaryGuardianPhone?: string | null
 }
 
+export interface StudentImportRow {
+  firstName?: string
+  middleName?: string
+  lastName?: string
+  gender?: string
+  dateOfBirth?: string
+  nationalId?: string
+  birthCertificateNumber?: string
+  address?: string
+  city?: string
+  religion?: string
+  className?: string
+  admissionDate?: string
+  guardianFirstName?: string
+  guardianLastName?: string
+  guardianPhone?: string
+  guardianEmail?: string
+  guardianRelationship?: string
+  openingBalance?: string
+}
+
+export interface StudentImportRowResult {
+  rowNumber: number
+  studentName: string
+  errors: string[]
+  warnings: string[]
+  isValid: boolean
+  resolvedClass?: string | null
+  guardianAction?: 'create' | 'link-existing' | null
+}
+
+export interface StudentImportResult {
+  committed: boolean
+  totalRows: number
+  validRows: number
+  errorRows: number
+  rows: StudentImportRowResult[]
+  studentsCreated: number
+  guardiansCreated: number
+  guardiansLinked: number
+  enrollmentsCreated: number
+  openingBalanceInvoices: number
+}
+
 export interface StudentGuardianDto {
   id: string
   firstName: string
@@ -553,6 +597,17 @@ export interface UpdateUserRequest {
   isActive: boolean
 }
 
+export interface UpdateMyProfileRequest {
+  firstName: string
+  lastName: string
+  phone?: string
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+}
+
 export interface AssignRolesRequest {
   userId: string
   roles: string[]
@@ -929,6 +984,44 @@ export interface AssignmentDto {
   attachmentFileName?: string | null
   isPublished: boolean
   submissionCount: number
+  gradedCount: number
+  rosterCount: number
+}
+
+export interface AssignmentRosterRowDto {
+  studentId: string
+  studentName: string
+  studentNumber: string
+  submissionId?: string | null
+  status: 'NotSubmitted' | 'Submitted' | 'Late' | 'Graded'
+  submittedAt?: string | null
+  comment?: string | null
+  feedback?: string | null
+  grade?: number | null
+  attachmentFileName?: string | null
+  attachmentUrl?: string | null
+}
+
+export interface AssignmentRosterDto {
+  id: string
+  title: string
+  description?: string | null
+  className: string
+  subjectName: string
+  dueDate: string
+  attachmentFileName?: string | null
+  attachmentUrl?: string | null
+  rosterCount: number
+  submittedCount: number
+  gradedCount: number
+  missingCount: number
+  rows: AssignmentRosterRowDto[]
+}
+
+export interface AssignmentGradeEntry {
+  studentId: string
+  grade?: number | null
+  feedback?: string | null
 }
 
 export interface AssignmentSubmissionDto {
@@ -1110,6 +1203,8 @@ export interface CreateDisciplineRecordRequest {
   demeritsAwarded?: number
   meritsAwarded?: number
   notifyGuardian: boolean
+  /** Channel for the guardian notification (SMS/WhatsApp); ignored when notifyGuardian is false. */
+  channel?: string
 }
 
 // ---- Transport ----
@@ -1337,6 +1432,7 @@ export interface MessageRecipientDto {
   studentId?: string | null
   status: string
   deliveredAt?: string | null
+  readAt?: string | null
   failureReason?: string | null
 }
 
@@ -1457,4 +1553,80 @@ export interface UpdateTenantModulesRequest {
   hasTransportModule: boolean
   hasHostelModule: boolean
   hasLibraryModule: boolean
+}
+
+// ---- Parent portal ----
+
+export interface MyChildDto {
+  studentId: string
+  studentNumber: string
+  fullName: string
+  className?: string | null
+  outstandingBalance: number
+}
+
+export interface MyChildInvoiceDto {
+  invoiceId: string
+  invoiceNumber: string
+  invoiceDate: string
+  dueDate: string
+  totalAmount: number
+  balance: number
+  payable: boolean
+}
+
+export interface MyChildFinanceDto {
+  studentId: string
+  totalBilled: number
+  totalPaid: number
+  outstandingBalance: number
+  invoices: MyChildInvoiceDto[]
+}
+
+export interface AssessmentResultItemDto {
+  assessmentId: string
+  assessmentName: string
+  assessmentType: string
+  score: number
+  maxScore: number
+  percentage: number
+  grade: string
+  weightPercentage: number
+}
+
+export interface SubjectResultSummaryDto {
+  subjectId: string
+  subjectName: string
+  averageScore: number
+  averagePercentage: number
+  grade: string
+  assessments: AssessmentResultItemDto[]
+}
+
+export interface StudentAcademicResultsDto {
+  studentId: string
+  studentName: string
+  studentNumber: string
+  className: string
+  termName?: string | null
+  overallAverage: number
+  overallGrade: string
+  classRank: number
+  totalInClass: number
+  subjectResults: SubjectResultSummaryDto[]
+}
+
+export interface OnlinePaymentInitiationDto {
+  paymentId: string
+  reference: string
+  redirectUrl?: string | null
+  pollUrl?: string | null
+  instructions?: string | null
+}
+
+export interface PaymentSettlementDto {
+  paymentId: string
+  status: string
+  settled: boolean
+  invoiceBalance: number
 }

@@ -13,7 +13,9 @@ export function useTenantFeatures() {
   const setFeatures = useAuthStore((s) => s.setFeatures)
 
   return useQuery({
-    queryKey: ['tenant-features'],
+    // Scoped by accessToken - see the matching comment in useProfile.ts for why a
+    // static key would leak a previous session's cached data across an account switch.
+    queryKey: ['tenant-features', accessToken],
     enabled: !!accessToken,
     queryFn: async () => {
       const data = await fetchTenantFeatures()

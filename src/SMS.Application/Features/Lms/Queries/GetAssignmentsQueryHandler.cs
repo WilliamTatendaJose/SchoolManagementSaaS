@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SMS.Application.Common.Models;
 using SMS.Application.Interfaces;
+using SMS.Domain.Enums;
 
 namespace SMS.Application.Features.Lms.Queries;
 
@@ -49,7 +50,9 @@ public class GetAssignmentsQueryHandler : IRequestHandler<GetAssignmentsQuery, R
                 DueDate = a.DueDate,
                 AttachmentFileName = a.AttachmentFileName,
                 IsPublished = a.IsPublished,
-                SubmissionCount = a.Submissions.Count
+                SubmissionCount = a.Submissions.Count,
+                GradedCount = a.Submissions.Count(s => s.Status == SubmissionStatuses.Graded),
+                RosterCount = _context.Students.Count(s => s.CurrentClassId == a.ClassId && s.Status == StudentStatus.Active)
             })
             .ToListAsync(cancellationToken);
 

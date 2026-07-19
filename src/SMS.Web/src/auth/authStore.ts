@@ -45,6 +45,19 @@ export const useAuthStore = create<AuthState>()(
           accessToken,
           refreshToken,
           user: user ?? state.user,
+          // A new session means a new (or at least unconfirmed) identity. Route guards
+          // (RoleRoute, PermissionRoute, StaffAreaGuard) treat any non-null `profile` as
+          // "ready to check roles/permissions against" - if the previous user's profile
+          // were left in place here, logging in as a second user without an explicit
+          // logout first (no session in between to clear it) would let those guards act
+          // on the WRONG identity for the moment between login and the fresh
+          // useProfile() fetch resolving. E.g. a parent logging in right after a staff
+          // session, in the same browser, would briefly be evaluated against the
+          // staff's roles and land in the staff shell instead of the portal. Clearing
+          // both here forces every guard back to its "profile not loaded yet" state
+          // until the fetch for THIS token actually completes.
+          profile: null,
+          features: null,
         })),
 
       setProfile: (profile) => set({ profile }),

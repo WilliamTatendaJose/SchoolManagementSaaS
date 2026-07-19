@@ -27,6 +27,7 @@ export function CreateDisciplineDrawer({ open, onClose }: { open: boolean; onClo
   const [demerits, setDemerits] = useState('')
   const [merits, setMerits] = useState('')
   const [notifyGuardian, setNotifyGuardian] = useState(true)
+  const [channel, setChannel] = useState('SMS')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -48,6 +49,7 @@ export function CreateDisciplineDrawer({ open, onClose }: { open: boolean; onClo
     setDemerits('')
     setMerits('')
     setNotifyGuardian(true)
+    setChannel('SMS')
     setError(null)
   }
 
@@ -83,6 +85,7 @@ export function CreateDisciplineDrawer({ open, onClose }: { open: boolean; onClo
         demeritsAwarded: demerits ? Number(demerits) : undefined,
         meritsAwarded: merits ? Number(merits) : undefined,
         notifyGuardian,
+        channel: notifyGuardian ? channel : undefined,
       })
       await queryClient.invalidateQueries({ queryKey: ['discipline'] })
       handleClose()
@@ -236,15 +239,27 @@ export function CreateDisciplineDrawer({ open, onClose }: { open: boolean; onClo
           />
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-          <input
-            type="checkbox"
-            checked={notifyGuardian}
-            onChange={(e) => setNotifyGuardian(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-          />
-          Notify guardian by SMS
-        </label>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={notifyGuardian}
+              onChange={(e) => setNotifyGuardian(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+            />
+            Notify guardian
+          </label>
+          {notifyGuardian && (
+            <select
+              value={channel}
+              onChange={(e) => setChannel(e.target.value)}
+              className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              <option value="SMS">SMS</option>
+              <option value="WhatsApp">WhatsApp</option>
+            </select>
+          )}
+        </div>
 
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">

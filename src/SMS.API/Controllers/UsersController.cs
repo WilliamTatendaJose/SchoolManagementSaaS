@@ -186,17 +186,51 @@ public class UsersController : BaseApiController
     public async Task<IActionResult> GetCurrentUser()
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        
+
         if (!Guid.TryParse(userId, out var userGuid))
             return Unauthorized();
 
         var result = await Mediator.Send(new GetUserByIdQuery(userGuid));
-        
+
         if (!result.IsSuccess)
             return NotFound(result.Error);
-            
+
         return Ok(result.Data);
     }
+
+    /// <summary>
+    /// Update the current user's own profile (name/phone). Deliberately not gated by
+    /// users.edit - every authenticated user can maintain their own profile, but only
+    /// their own: the target id always comes from the JWT, never from the request body.
+    /// </summary>
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateMyProfileRequest request)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userId, out var userGuid))
+            return Unauthorized();
+
+        var result = await Mediator.Send(new UpdateMyProfileCommand
+        {
+            UserId = userGuid,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Phone = request.Phone
+        });
+
+        if (!result.IsSuccess)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
+}
+
+public record UpdateMyProfileRequest
+{
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
+    public string? Phone { get; init; }
 }
 
 public record ChangePasswordRequest

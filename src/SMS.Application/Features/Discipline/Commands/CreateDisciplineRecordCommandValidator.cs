@@ -28,5 +28,8 @@ public class CreateDisciplineRecordCommandValidator : AbstractValidator<CreateDi
         RuleFor(x => x.MeritsAwarded)
             .GreaterThanOrEqualTo(0).When(x => x.MeritsAwarded.HasValue)
             .WithMessage("Merits cannot be negative");
+
+        RuleFor(x => x.Channel)
+            .NotEmpty().When(x => x.NotifyGuardian).WithMessage("Channel is required to notify the guardian");
     }
 }

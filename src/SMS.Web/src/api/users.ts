@@ -1,8 +1,10 @@
 import { apiClient } from './client'
 import type {
   AssignRolesRequest,
+  ChangePasswordRequest,
   PaginatedList,
   RegisterUserRequest,
+  UpdateMyProfileRequest,
   UpdateUserRequest,
   UserDetailDto,
   UserListDto,
@@ -42,4 +44,12 @@ export async function assignRoles(payload: AssignRolesRequest) {
 export async function resetPassword(id: string) {
   const { data } = await apiClient.post<{ temporaryPassword: string }>(`/users/${id}/reset-password`)
   return data
+}
+
+export async function updateMyProfile(payload: UpdateMyProfileRequest) {
+  await apiClient.put('/users/me', payload)
+}
+
+export async function changeMyPassword(payload: ChangePasswordRequest) {
+  await apiClient.post('/users/change-password', payload)
 }

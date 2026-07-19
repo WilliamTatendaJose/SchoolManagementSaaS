@@ -1,5 +1,10 @@
 import { apiClient } from './client'
-import type { AssignmentDto, AssignmentSubmissionDto, GradeSubmissionRequest } from './types'
+import type {
+  AssignmentDto,
+  AssignmentGradeEntry,
+  AssignmentRosterDto,
+  MessageDispatchResultDto,
+} from './types'
 
 export interface AssignmentsQuery {
   classId?: string
@@ -36,11 +41,6 @@ export async function createAssignment(payload: CreateAssignmentPayload) {
   return data
 }
 
-export async function fetchSubmissions(assignmentId: string) {
-  const { data } = await apiClient.get<AssignmentSubmissionDto[]>(`/assignments/${assignmentId}/submissions`)
-  return data
-}
-
 export interface RecordSubmissionPayload {
   assignmentId: string
   studentId: string
@@ -58,6 +58,19 @@ export async function recordSubmission(payload: RecordSubmissionPayload) {
   return data
 }
 
-export async function gradeSubmission(payload: GradeSubmissionRequest) {
-  await apiClient.post(`/assignments/submissions/${payload.submissionId}/grade`, payload)
+export async function fetchAssignmentRoster(assignmentId: string) {
+  const { data } = await apiClient.get<AssignmentRosterDto>(`/assignments/${assignmentId}/roster`)
+  return data
+}
+
+export async function bulkGradeAssignment(assignmentId: string, grades: AssignmentGradeEntry[]) {
+  await apiClient.post(`/assignments/${assignmentId}/grades`, { assignmentId, grades })
+}
+
+export async function remindNonSubmitters(assignmentId: string, channel: string) {
+  const { data } = await apiClient.post<MessageDispatchResultDto>(
+    `/assignments/${assignmentId}/remind`,
+    { assignmentId, channel },
+  )
+  return data
 }

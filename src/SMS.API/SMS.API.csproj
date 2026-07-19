@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>SMS.API</RootNamespace>
+    <UserSecretsId>809233d9-80a9-49ad-9096-626a7678cced</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

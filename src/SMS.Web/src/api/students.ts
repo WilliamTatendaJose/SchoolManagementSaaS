@@ -4,6 +4,8 @@ import type {
   PaginatedList,
   StudentDetailDto,
   StudentDto,
+  StudentImportResult,
+  StudentImportRow,
   UpdateStudentRequest,
 } from './types'
 
@@ -36,4 +38,9 @@ export async function updateStudent(payload: UpdateStudentRequest) {
 
 export async function deleteStudent(id: string) {
   await apiClient.delete(`/students/${id}`)
+}
+
+export async function importStudents(rows: StudentImportRow[], commit: boolean) {
+  const { data } = await apiClient.post<StudentImportResult>('/students/import', { rows, commit })
+  return data
 }

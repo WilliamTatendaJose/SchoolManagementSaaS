@@ -100,7 +100,7 @@ public class NotificationDispatchTests : IAsyncLifetime
                 Channel = MessageChannels.Sms,
                 Subject = "Sports day",
                 Content = "Sports day is on Friday.",
-                Audience = MessageAudience.SpecificStudents,
+                Audience = nameof(MessageAudience.SpecificStudents),
                 StudentIds = [_aliceId, _bobId, _carolId]
             }, CancellationToken.None);
 
@@ -130,7 +130,7 @@ public class NotificationDispatchTests : IAsyncLifetime
         {
             Channel = MessageChannels.Sms,
             Content = "Hello",
-            Audience = MessageAudience.SpecificStudents,
+            Audience = nameof(MessageAudience.SpecificStudents),
             StudentIds = [_aliceId, _bobId]
         }, CancellationToken.None);
 
@@ -152,7 +152,7 @@ public class NotificationDispatchTests : IAsyncLifetime
         {
             Channel = "Email",
             Content = "Hi",
-            Audience = MessageAudience.SpecificStudents,
+            Audience = nameof(MessageAudience.SpecificStudents),
             StudentIds = [_aliceId]
         }, CancellationToken.None);
 

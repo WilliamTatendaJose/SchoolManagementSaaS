@@ -88,7 +88,7 @@ public class ReviewWeekendLeaveCommandHandler : IRequestHandler<ReviewWeekendLea
         };
         _context.Messages.Add(message);
 
-        var targets = recipients.Select(r => (r, content)).ToList();
+        var targets = recipients.Select(r => new DispatchTarget(r, content)).ToList();
         await MessageDispatcher.DispatchAsync(channel, message, targets, cancellationToken);
 
         leave.GuardianNotified = message.DeliveredCount > 0;

@@ -2,6 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   BadgeCheck,
   CalendarDays,
+  Download,
+  GraduationCap,
   Heart,
   MapPin,
   Pencil,
@@ -13,8 +15,10 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { deleteStudent, fetchStudent } from '../../api/students'
+import { fetchAcademicTerms } from '../../api/academicTerms'
 import { getErrorMessage, isNotFoundError } from '../../api/errors'
+import { downloadReportCard } from '../../api/reportCards'
+import { deleteStudent, fetchStudent } from '../../api/students'
 import { useAuthStore } from '../../auth/authStore'
 import { Avatar } from '../../components/ui/Avatar'
 import { Badge, StatusBadge } from '../../components/ui/Badge'
@@ -34,12 +38,62 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
   )
 }
 
+function ReportCardCard({ studentId, studentNumber }: { studentId: string; studentNumber: string }) {
+  const [termId, setTermId] = useState('')
+  const [downloading, setDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
+
+  const { data: terms } = useQuery({ queryKey: ['academic-terms'], queryFn: () => fetchAcademicTerms() })
+
+  async function handleDownload() {
+    if (!termId) return
+    setDownloadError(null)
+    setDownloading(true)
+    try {
+      await downloadReportCard(studentId, termId, studentNumber)
+    } catch (err) {
+      setDownloadError(getErrorMessage(err, 'Could not generate the report card for this term.'))
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+        <GraduationCap className="h-4 w-4" strokeWidth={2} />
+        <h3 className="text-sm font-semibold">Report card</h3>
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <select
+          value={termId}
+          onChange={(e) => setTermId(e.target.value)}
+          className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        >
+          <option value="">Select a term…</option>
+          {terms?.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.academicYearName} · {t.name}
+            </option>
+          ))}
+        </select>
+        <Button variant="secondary" onClick={handleDownload} loading={downloading} disabled={!termId}>
+          <Download className="h-4 w-4" strokeWidth={2} />
+          PDF
+        </Button>
+      </div>
+      {downloadError && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{downloadError}</p>}
+    </div>
+  )
+}
+
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const canEdit = useAuthStore((s) => s.hasPermission('students.edit'))
   const canDelete = useAuthStore((s) => s.hasPermission('students.delete'))
+  const canViewResults = useAuthStore((s) => s.hasPermission('results.view'))
   const [editOpen, setEditOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -244,6 +298,8 @@ export function StudentDetailPage() {
             </ul>
           )}
         </div>
+
+        {canViewResults && <ReportCardCard studentId={student.id} studentNumber={student.studentNumber} />}
       </div>
 
       <StudentFormDrawer open={editOpen} onClose={() => setEditOpen(false)} student={student} />

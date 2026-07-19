@@ -62,7 +62,7 @@ export function RecordSubmissionDrawer({
     setSubmitting(true)
     try {
       await recordSubmission({ assignmentId, studentId, comment: comment || undefined, attachment })
-      await queryClient.invalidateQueries({ queryKey: ['assignment-submissions', assignmentId] })
+      await queryClient.invalidateQueries({ queryKey: ['assignment-roster', assignmentId] })
       handleClose()
     } catch (err) {
       setError(getErrorMessage(err, 'Could not record submission'))

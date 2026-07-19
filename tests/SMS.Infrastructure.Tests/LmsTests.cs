@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SMS.Application.Features.Lms;
 using SMS.Application.Features.Lms.Commands;
 using SMS.Application.Features.Lms.Queries;
@@ -29,6 +30,12 @@ internal sealed class FakeFileStorageService : IFileStorageService
         Task.FromResult(true);
 
     public string GetFileUrl(string fileKey) => $"https://files.example/{fileKey}";
+
+    /// <summary>Wraps this fake behind an IServiceProvider - the Lms handlers resolve
+    /// IFileStorageService lazily via IServiceProvider.GetRequiredService rather than
+    /// taking a constructor dependency, so they don't eagerly build the real S3 client.</summary>
+    public IServiceProvider AsServiceProvider() =>
+        new ServiceCollection().AddSingleton<IFileStorageService>(this).BuildServiceProvider();
 }
 
 public class LmsTests : IAsyncLifetime
@@ -95,7 +102,7 @@ public class LmsTests : IAsyncLifetime
         var storage = new FakeFileStorageService();
         await using var db = _harness.CreateDbContext();
 
-        var result = await new CreateAssignmentCommandHandler(db, storage).Handle(ValidAssignment(new DateTime(2026, 3, 1)) with
+        var result = await new CreateAssignmentCommandHandler(db, storage.AsServiceProvider()).Handle(ValidAssignment(new DateTime(2026, 3, 1)) with
         {
             AttachmentFileName = "worksheet.pdf",
             AttachmentContentType = "application/pdf",
@@ -119,15 +126,15 @@ public class LmsTests : IAsyncLifetime
 
         await using (var db = _harness.CreateDbContext())
         {
-            var onTime = await new CreateAssignmentCommandHandler(db, storage).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
+            var onTime = await new CreateAssignmentCommandHandler(db, storage.AsServiceProvider()).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
             onTimeAssignmentId = onTime.Data;
-            var late = await new CreateAssignmentCommandHandler(db, storage).Handle(ValidAssignment(new DateTime(2026, 3, 1)) with { Title = "Late one" }, CancellationToken.None);
+            var late = await new CreateAssignmentCommandHandler(db, storage.AsServiceProvider()).Handle(ValidAssignment(new DateTime(2026, 3, 1)) with { Title = "Late one" }, CancellationToken.None);
             lateAssignmentId = late.Data;
         }
 
         await using (var db = _harness.CreateDbContext())
         {
-            var onTimeSub = await new RecordAssignmentSubmissionCommandHandler(db, storage).Handle(new RecordAssignmentSubmissionCommand
+            var onTimeSub = await new RecordAssignmentSubmissionCommandHandler(db, storage.AsServiceProvider()).Handle(new RecordAssignmentSubmissionCommand
             {
                 AssignmentId = onTimeAssignmentId,
                 StudentId = _studentId,
@@ -135,7 +142,7 @@ public class LmsTests : IAsyncLifetime
             }, CancellationToken.None);
             onTimeSub.IsSuccess.Should().BeTrue();
 
-            var lateSub = await new RecordAssignmentSubmissionCommandHandler(db, storage).Handle(new RecordAssignmentSubmissionCommand
+            var lateSub = await new RecordAssignmentSubmissionCommandHandler(db, storage.AsServiceProvider()).Handle(new RecordAssignmentSubmissionCommand
             {
                 AssignmentId = lateAssignmentId,
                 StudentId = _studentId,
@@ -156,14 +163,14 @@ public class LmsTests : IAsyncLifetime
         Guid assignmentId;
         await using (var db = _harness.CreateDbContext())
         {
-            var created = await new CreateAssignmentCommandHandler(db, storage).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
+            var created = await new CreateAssignmentCommandHandler(db, storage.AsServiceProvider()).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
             assignmentId = created.Data;
         }
 
         Guid firstSubmissionId;
         await using (var db = _harness.CreateDbContext())
         {
-            var first = await new RecordAssignmentSubmissionCommandHandler(db, storage).Handle(new RecordAssignmentSubmissionCommand
+            var first = await new RecordAssignmentSubmissionCommandHandler(db, storage.AsServiceProvider()).Handle(new RecordAssignmentSubmissionCommand
             {
                 AssignmentId = assignmentId,
                 StudentId = _studentId,
@@ -174,7 +181,7 @@ public class LmsTests : IAsyncLifetime
 
         await using (var db = _harness.CreateDbContext())
         {
-            var second = await new RecordAssignmentSubmissionCommandHandler(db, storage).Handle(new RecordAssignmentSubmissionCommand
+            var second = await new RecordAssignmentSubmissionCommandHandler(db, storage.AsServiceProvider()).Handle(new RecordAssignmentSubmissionCommand
             {
                 AssignmentId = assignmentId,
                 StudentId = _studentId,
@@ -197,13 +204,13 @@ public class LmsTests : IAsyncLifetime
         Guid assignmentId, submissionId;
         await using (var db = _harness.CreateDbContext())
         {
-            var created = await new CreateAssignmentCommandHandler(db, storage).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
+            var created = await new CreateAssignmentCommandHandler(db, storage.AsServiceProvider()).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
             assignmentId = created.Data;
         }
 
         await using (var db = _harness.CreateDbContext())
         {
-            var sub = await new RecordAssignmentSubmissionCommandHandler(db, storage).Handle(new RecordAssignmentSubmissionCommand
+            var sub = await new RecordAssignmentSubmissionCommandHandler(db, storage.AsServiceProvider()).Handle(new RecordAssignmentSubmissionCommand
             {
                 AssignmentId = assignmentId,
                 StudentId = _studentId
@@ -223,7 +230,7 @@ public class LmsTests : IAsyncLifetime
         }
 
         await using var db2 = _harness.CreateDbContext();
-        var resubmit = await new RecordAssignmentSubmissionCommandHandler(db2, storage).Handle(new RecordAssignmentSubmissionCommand
+        var resubmit = await new RecordAssignmentSubmissionCommandHandler(db2, storage.AsServiceProvider()).Handle(new RecordAssignmentSubmissionCommand
         {
             AssignmentId = assignmentId,
             StudentId = _studentId,
@@ -241,13 +248,13 @@ public class LmsTests : IAsyncLifetime
         Guid assignmentId;
         await using (var db = _harness.CreateDbContext())
         {
-            var created = await new CreateAssignmentCommandHandler(db, storage).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
+            var created = await new CreateAssignmentCommandHandler(db, storage.AsServiceProvider()).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
             assignmentId = created.Data;
         }
 
         await using (var db = _harness.CreateDbContext())
         {
-            await new RecordAssignmentSubmissionCommandHandler(db, storage).Handle(new RecordAssignmentSubmissionCommand
+            await new RecordAssignmentSubmissionCommandHandler(db, storage.AsServiceProvider()).Handle(new RecordAssignmentSubmissionCommand
             {
                 AssignmentId = assignmentId,
                 StudentId = _studentId,
@@ -258,7 +265,7 @@ public class LmsTests : IAsyncLifetime
         }
 
         await using var db2 = _harness.CreateDbContext();
-        var submissions = await new GetAssignmentSubmissionsQueryHandler(db2, storage)
+        var submissions = await new GetAssignmentSubmissionsQueryHandler(db2, storage.AsServiceProvider())
             .Handle(new GetAssignmentSubmissionsQuery(assignmentId), CancellationToken.None);
 
         submissions.IsSuccess.Should().BeTrue();
@@ -274,13 +281,13 @@ public class LmsTests : IAsyncLifetime
         Guid assignmentId, submissionId;
         await using (var db = _harness.CreateDbContext())
         {
-            var created = await new CreateAssignmentCommandHandler(db, storage).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
+            var created = await new CreateAssignmentCommandHandler(db, storage.AsServiceProvider()).Handle(ValidAssignment(new DateTime(2026, 3, 10)), CancellationToken.None);
             assignmentId = created.Data;
         }
 
         await using (var db = _harness.CreateDbContext())
         {
-            var sub = await new RecordAssignmentSubmissionCommandHandler(db, storage).Handle(new RecordAssignmentSubmissionCommand
+            var sub = await new RecordAssignmentSubmissionCommandHandler(db, storage.AsServiceProvider()).Handle(new RecordAssignmentSubmissionCommand
             {
                 AssignmentId = assignmentId,
                 StudentId = _studentId
@@ -295,7 +302,7 @@ public class LmsTests : IAsyncLifetime
         }
 
         await using var db2 = _harness.CreateDbContext();
-        var list = await new GetStudentAssignmentsQueryHandler(db2, storage).Handle(new GetStudentAssignmentsQuery(_studentId), CancellationToken.None);
+        var list = await new GetStudentAssignmentsQueryHandler(db2, storage.AsServiceProvider()).Handle(new GetStudentAssignmentsQuery(_studentId), CancellationToken.None);
 
         list.IsSuccess.Should().BeTrue();
         var entry = list.Data!.Single(a => a.AssignmentId == assignmentId);

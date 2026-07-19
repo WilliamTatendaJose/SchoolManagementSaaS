@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { CalendarCheck, CheckCircle2, Clock, Send, ShieldQuestion, XCircle } from 'lucide-react'
+import { isAxiosError } from 'axios'
+import { CalendarCheck, CheckCircle2, Clock, CloudOff, Send, ShieldQuestion, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { fetchClassAttendance, markAttendance } from '../../api/attendance'
 import { fetchClasses } from '../../api/classes'
@@ -12,6 +13,15 @@ import { Button } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { StatCard } from '../../components/ui/StatCard'
+import { queueAttendance } from '../../offline/attendanceQueue'
+import { usePendingAttendance } from '../../offline/usePendingAttendanceCount'
+
+/** True for a genuine connectivity failure - as opposed to a real HTTP error response,
+ * which means we reached the server and it rejected the request for some other reason
+ * (validation, permissions, ...) that queuing and silently retrying would never fix. */
+function isNetworkFailure(err: unknown) {
+  return !navigator.onLine || (isAxiosError(err) && !err.response)
+}
 
 interface RowState {
   studentId: string
@@ -45,6 +55,8 @@ export function AttendancePage() {
   const [saving, setSaving] = useState(false)
 
   const { data: classes } = useQuery({ queryKey: ['classes'], queryFn: fetchClasses })
+  const pending = usePendingAttendance()
+  const pendingForThisView = pending.find((p) => p.classId === classId && p.date === date)
 
   useEffect(() => {
     if (!classId && classes && classes.length > 0) {
@@ -66,17 +78,25 @@ export function AttendancePage() {
 
   useEffect(() => {
     if (!roster) return
+    // A reload while still offline can't re-fetch `existing` from the server, so prefer
+    // whatever's still sitting in the offline queue for this exact class/date - otherwise
+    // marks entered before the reload would appear to have vanished (they haven't; they're
+    // just not visible until the queue syncs).
+    const queuedByStudent = new Map(
+      (pendingForThisView?.payload.records ?? []).map((r) => [r.studentId, r]),
+    )
     const existingByStudent = new Map((existing ?? []).map((a) => [a.studentId, a]))
     setRows(
       roster.items.map((s) => {
+        const queued = queuedByStudent.get(s.id)
         const a = existingByStudent.get(s.id)
         return {
           studentId: s.id,
           studentName: s.fullName,
           studentNumber: s.studentNumber,
-          status: (a?.status as AttendanceStatus) ?? 'Present',
-          timeIn: a?.timeIn ?? '',
-          reason: a?.reason ?? '',
+          status: queued?.status ?? (a?.status as AttendanceStatus) ?? 'Present',
+          timeIn: queued?.timeIn ?? a?.timeIn ?? '',
+          reason: queued?.reason ?? a?.reason ?? '',
         }
       }),
     )
@@ -108,22 +128,34 @@ export function AttendancePage() {
     setError(null)
     setSavedMessage(null)
     setSaving(true)
+
+    const payload = {
+      classId,
+      date,
+      sendNotifications,
+      records: rows.map((r) => ({
+        studentId: r.studentId,
+        status: r.status,
+        timeIn: r.timeIn || undefined,
+        reason: r.reason || undefined,
+      })),
+    }
+
     try {
-      const result = await markAttendance({
-        classId,
-        date,
-        sendNotifications,
-        records: rows.map((r) => ({
-          studentId: r.studentId,
-          status: r.status,
-          timeIn: r.timeIn || undefined,
-          reason: r.reason || undefined,
-        })),
-      })
+      const result = await markAttendance(payload)
       setSavedMessage(result.message)
       await queryClient.invalidateQueries({ queryKey: ['class-attendance', classId, date] })
     } catch (err) {
-      setError(getErrorMessage(err, 'Could not save attendance'))
+      if (isNetworkFailure(err)) {
+        // No connectivity - queue it. The same idempotent payload replays automatically
+        // once the connection returns (AppShell runs the sync loop app-wide), so the
+        // teacher doesn't need to remember to retry or stay on this page.
+        const className = classes?.find((c) => c.id === classId)?.name ?? 'this class'
+        await queueAttendance(classId, date, className, payload)
+        setSavedMessage(`Saved offline - will sync automatically once you're back online.`)
+      } else {
+        setError(getErrorMessage(err, 'Could not save attendance'))
+      }
     } finally {
       setSaving(false)
     }
@@ -196,6 +228,19 @@ export function AttendancePage() {
         <p className="mb-4 rounded-lg bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
           {savedMessage}
         </p>
+      )}
+
+      {pending.length > 0 && (
+        <div className="mb-4 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+          <CloudOff className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} />
+          <span>
+            {pending.length} attendance {pending.length === 1 ? 'submission' : 'submissions'} waiting to sync
+            {pending.length <= 3 && (
+              <>: {pending.map((p) => `${p.className} (${p.date})`).join(', ')}</>
+            )}
+            . This will happen automatically once you're back online.
+          </span>
+        </div>
       )}
 
       {rows.length > 0 && (

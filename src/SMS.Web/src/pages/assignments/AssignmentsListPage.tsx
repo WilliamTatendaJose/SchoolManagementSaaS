@@ -6,11 +6,27 @@ import { fetchAcademicTerms } from '../../api/academicTerms'
 import { fetchAssignments } from '../../api/assignments'
 import { fetchClasses } from '../../api/classes'
 import { fetchSubjects } from '../../api/subjects'
+import type { AssignmentDto } from '../../api/types'
 import { useAuthStore } from '../../auth/authStore'
+import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { AssignmentFormDrawer } from './AssignmentFormDrawer'
+
+const DUE_SOON_DAYS = 3
+
+function dueStatus(a: AssignmentDto): { label: string; tone: 'emerald' | 'amber' | 'red' | 'slate' } {
+  const allGraded = a.rosterCount > 0 && a.gradedCount >= a.rosterCount
+  if (allGraded) return { label: 'Graded', tone: 'emerald' }
+
+  const due = new Date(a.dueDate)
+  const now = new Date()
+  const daysUntil = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  if (daysUntil < 0) return { label: 'Overdue', tone: 'red' }
+  if (daysUntil <= DUE_SOON_DAYS) return { label: 'Due soon', tone: 'amber' }
+  return { label: 'Open', tone: 'slate' }
+}
 
 export function AssignmentsListPage() {
   const navigate = useNavigate()
@@ -112,28 +128,48 @@ export function AssignmentsListPage() {
                 <th className="px-4 py-3 font-medium">Class</th>
                 <th className="px-4 py-3 font-medium">Subject</th>
                 <th className="px-4 py-3 font-medium">Due</th>
-                <th className="px-4 py-3 font-medium text-right">Submissions</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="w-40 px-4 py-3 font-medium">Submitted</th>
               </tr>
             </thead>
             <tbody>
-              {assignments.map((a) => (
-                <tr
-                  key={a.id}
-                  onClick={() => navigate(`/assignments/${a.id}`)}
-                  className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50 dark:border-slate-800/60 dark:hover:bg-slate-800/40"
-                >
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-slate-900 dark:text-white">{a.title}</p>
-                    {a.attachmentFileName && <p className="text-xs text-slate-400">{a.attachmentFileName}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{a.className}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{a.subjectName}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    {new Date(a.dueDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">{a.submissionCount}</td>
-                </tr>
-              ))}
+              {assignments.map((a) => {
+                const status = dueStatus(a)
+                const pct = a.rosterCount > 0 ? Math.round((a.submissionCount / a.rosterCount) * 100) : 0
+                return (
+                  <tr
+                    key={a.id}
+                    onClick={() => navigate(`/assignments/${a.id}`)}
+                    className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50 dark:border-slate-800/60 dark:hover:bg-slate-800/40"
+                  >
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-slate-900 dark:text-white">{a.title}</p>
+                      {a.attachmentFileName && <p className="text-xs text-slate-400">{a.attachmentFileName}</p>}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{a.className}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{a.subjectName}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      {new Date(a.dueDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge tone={status.tone}>{status.label}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-brand-500 transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                          {a.submissionCount}/{a.rosterCount}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         ) : (
