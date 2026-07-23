@@ -1,20 +1,24 @@
 import { useQuery } from '@tanstack/react-query'
-import { CalendarCheck, GraduationCap, Users, Wallet } from 'lucide-react'
+import { BookOpenCheck, CalendarCheck, GraduationCap, IdCard, Users, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { fetchMyChildren } from '../../api/portal'
 import { Avatar } from '../../components/ui/Avatar'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ErrorState } from '../../components/ui/ErrorState'
+import { PortalAssignmentsTab } from './PortalAssignmentsTab'
 import { PortalAttendanceTab } from './PortalAttendanceTab'
+import { PortalDetailsTab } from './PortalDetailsTab'
 import { PortalFinanceTab } from './PortalFinanceTab'
 import { PortalResultsTab } from './PortalResultsTab'
 
-type Tab = 'results' | 'attendance' | 'fees'
+type Tab = 'results' | 'assignments' | 'attendance' | 'fees' | 'details'
 
 const TABS: { key: Tab; label: string; icon: typeof GraduationCap }[] = [
   { key: 'results', label: 'Results', icon: GraduationCap },
+  { key: 'assignments', label: 'Work', icon: BookOpenCheck },
   { key: 'attendance', label: 'Attendance', icon: CalendarCheck },
   { key: 'fees', label: 'Fees', icon: Wallet },
+  { key: 'details', label: 'Details', icon: IdCard },
 ]
 
 export function PortalHomePage() {
@@ -100,13 +104,13 @@ export function PortalHomePage() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors ${
+            className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 text-xs font-medium transition-colors sm:flex-row sm:gap-1.5 sm:text-sm ${
               tab === key
                 ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white'
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            <Icon className="h-4 w-4" strokeWidth={2} />
+            <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
             {label}
           </button>
         ))}
@@ -115,8 +119,10 @@ export function PortalHomePage() {
       {activeChildId && (
         <div>
           {tab === 'results' && <PortalResultsTab studentId={activeChildId} />}
+          {tab === 'assignments' && <PortalAssignmentsTab studentId={activeChildId} />}
           {tab === 'attendance' && <PortalAttendanceTab studentId={activeChildId} />}
           {tab === 'fees' && <PortalFinanceTab studentId={activeChildId} studentName={activeChild?.fullName ?? ''} />}
+          {tab === 'details' && <PortalDetailsTab studentId={activeChildId} />}
         </div>
       )}
     </div>

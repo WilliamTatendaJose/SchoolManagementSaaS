@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SMS.Application.Common.Branding;
 using SMS.Application.Common.Models;
 using SMS.Application.Interfaces;
 
@@ -40,7 +41,7 @@ public class GenerateReceiptQueryHandler : IRequestHandler<GenerateReceiptQuery,
 
         var model = new ReceiptModel
         {
-            SchoolName = tenant?.Name ?? "School",
+            Branding = BrandingBuilder.From(tenant),
             ReceiptNumber = payment.ReceiptNumber,
             StudentName = invoice.Student.FullName,
             StudentNumber = invoice.Student.StudentNumber,

@@ -2,10 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { fetchInvoice } from '../../api/finance'
+import { fetchSettings } from '../../api/settings'
 import { useAuthStore } from '../../auth/authStore'
 import { PAYMENT_METHOD_LABELS } from '../../api/types'
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
+const DEFAULT_PRIMARY = '#0F172A'
+const DEFAULT_ACCENT = '#2563EB'
 
 export function InvoicePrintPage() {
   const { id } = useParams<{ id: string }>()
@@ -16,6 +20,9 @@ export function InvoicePrintPage() {
     queryFn: () => fetchInvoice(id!),
     enabled: !!id,
   })
+
+  // Same branding the PDF uses, so Print matches the downloadable document.
+  const { data: settings } = useQuery({ queryKey: ['settings'], queryFn: fetchSettings })
 
   useEffect(() => {
     if (invoice) {
@@ -32,30 +39,49 @@ export function InvoicePrintPage() {
   }
 
   const isPaid = invoice.balance <= 0
+  const primary = settings?.primaryColor || DEFAULT_PRIMARY
+  const accent = settings?.accentColor || DEFAULT_ACCENT
+  const schoolName = settings?.name || tenantName || 'School'
+  const contactLine = [settings?.address, settings?.city, settings?.country, settings?.phone, settings?.email, settings?.website]
+    .filter(Boolean)
+    .join('  •  ')
 
   return (
-    <div className="mx-auto max-w-3xl bg-white p-10 text-slate-900 print:p-0">
+    <div
+      className="mx-auto max-w-3xl bg-white p-10 text-slate-900 print:p-0"
+      // Keep the brand colours (header rule, accent bands) when the browser prints -
+      // they're stripped by default.
+      style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+    >
       <div className="mb-6 flex justify-end print:hidden">
         <button
           onClick={() => window.print()}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+          className="rounded-lg px-4 py-2 text-sm font-semibold text-white hover:brightness-110"
+          style={{ backgroundColor: accent }}
         >
           Print / Save as PDF
         </button>
       </div>
 
-      <div className="flex items-start justify-between border-b border-slate-200 pb-6">
-        <div>
-          <h1 className="text-xl font-bold">{tenantName ?? 'School'}</h1>
-          <p className="mt-1 text-sm text-slate-500">Invoice</p>
+      <div className="flex items-start justify-between pb-4">
+        <div className="flex items-center gap-3">
+          {settings?.logo && (
+            <img src={settings.logo} alt="" className="h-14 w-14 shrink-0 object-contain" />
+          )}
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: primary }}>{schoolName}</h1>
+            {contactLine && <p className="mt-0.5 text-[11px] text-slate-500">{contactLine}</p>}
+          </div>
         </div>
         <div className="text-right">
-          <p className="text-lg font-semibold">{invoice.invoiceNumber}</p>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="text-lg font-semibold" style={{ color: accent }}>Invoice</p>
+          <p className="text-sm font-semibold">{invoice.invoiceNumber}</p>
+          <p className="mt-0.5 text-xs text-slate-500">
             {isPaid ? <span className="font-medium text-emerald-600">PAID</span> : 'OUTSTANDING'}
           </p>
         </div>
       </div>
+      <div className="h-[2px] w-full" style={{ backgroundColor: accent }} />
 
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
@@ -78,11 +104,14 @@ export function InvoicePrintPage() {
 
       <table className="mt-8 w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-slate-300 text-xs uppercase tracking-wider text-slate-400">
-            <th className="py-2 font-medium">Description</th>
-            <th className="py-2 text-right font-medium">Qty</th>
-            <th className="py-2 text-right font-medium">Amount</th>
-            <th className="py-2 text-right font-medium">Total</th>
+          <tr
+            className="text-xs uppercase tracking-wider"
+            style={{ color: accent, borderBottom: `1.5px solid ${accent}` }}
+          >
+            <th className="py-2 font-semibold">Description</th>
+            <th className="py-2 text-right font-semibold">Qty</th>
+            <th className="py-2 text-right font-semibold">Amount</th>
+            <th className="py-2 text-right font-semibold">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -113,7 +142,10 @@ export function InvoicePrintPage() {
             <span>Paid</span>
             <span>-{currency.format(invoice.paidAmount)}</span>
           </div>
-          <div className="flex justify-between border-t border-slate-300 pt-1.5 text-base font-bold">
+          <div
+            className="mt-1.5 flex justify-between rounded px-3 py-2 text-base font-bold text-white"
+            style={{ backgroundColor: accent }}
+          >
             <span>Balance due</span>
             <span>{currency.format(invoice.balance)}</span>
           </div>
@@ -155,7 +187,9 @@ export function InvoicePrintPage() {
         </div>
       )}
 
-      <p className="mt-10 text-center text-xs text-slate-400 print:mt-16">Thank you.</p>
+      <div className="mt-10 border-t border-slate-200 pt-3 text-center text-xs text-slate-400 print:mt-16">
+        Thank you. — {schoolName}
+      </div>
     </div>
   )
 }

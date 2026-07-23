@@ -28,6 +28,7 @@ import { TransportPage } from './pages/transport/TransportPage'
 import { TransportRouteDetailPage } from './pages/transport/TransportRouteDetailPage'
 import { AssignmentSubmissionsPage } from './pages/assignments/AssignmentSubmissionsPage'
 import { AssignmentsListPage } from './pages/assignments/AssignmentsListPage'
+import { MaterialsListPage } from './pages/materials/MaterialsListPage'
 import { EnrollmentsListPage } from './pages/enrollments/EnrollmentsListPage'
 import { FinancePage } from './pages/finance/FinancePage'
 import { InvoiceDetailPage } from './pages/finance/InvoiceDetailPage'
@@ -172,6 +173,7 @@ export default function App() {
               <Route element={<FeatureRoute permission="assignments.view" module="lms" />}>
                 <Route path="/assignments" element={<AssignmentsListPage />} />
                 <Route path="/assignments/:id" element={<AssignmentSubmissionsPage />} />
+                <Route path="/materials" element={<MaterialsListPage />} />
               </Route>
 
               <Route element={<FeatureRoute permission="hostel.view" module="hostel" />}>

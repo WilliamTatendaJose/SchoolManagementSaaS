@@ -10,10 +10,8 @@ namespace SMS.Application.Features.Lms.Queries;
 public class GetAssignmentRosterQueryHandler : IRequestHandler<GetAssignmentRosterQuery, Result<AssignmentRosterDto>>
 {
     private readonly IApplicationDbContext _context;
-    // Resolved lazily (not constructor-injected): building a live IFileStorageService
-    // constructs the AWS S3 client, which eagerly resolves AWS credentials and can hang
-    // for 15-30s before failing wherever they aren't configured. Most assignments have
-    // no attachments, so that cost/failure must not be paid on every roster fetch.
+    // Resolved lazily (not constructor-injected) so storage is only touched when a file
+    // download URL is actually needed. File storage is DB-backed (no external dependency).
     private readonly IServiceProvider _serviceProvider;
 
     public GetAssignmentRosterQueryHandler(IApplicationDbContext context, IServiceProvider serviceProvider)

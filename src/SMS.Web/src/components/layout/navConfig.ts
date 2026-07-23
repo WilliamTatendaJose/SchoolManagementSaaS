@@ -12,6 +12,7 @@ import {
   BedDouble,
   Bus,
   Library,
+  FolderOpen,
   Briefcase,
   MessageSquare,
   Package,
@@ -66,6 +67,7 @@ export const navGroups: NavGroup[] = [
       { label: 'Timetable', path: '/timetable', icon: CalendarClock, permission: 'timetable.view' },
       { label: 'Assessments & results', path: '/results', icon: GraduationCap, permission: 'results.view' },
       { label: 'Assignments', path: '/assignments', icon: BookOpenCheck, permission: 'assignments.view', module: 'lms' },
+      { label: 'Course materials', path: '/materials', icon: FolderOpen, permission: 'assignments.view', module: 'lms' },
     ],
   },
   {

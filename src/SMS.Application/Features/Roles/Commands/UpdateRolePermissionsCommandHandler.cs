@@ -31,15 +31,14 @@ public class UpdateRolePermissionsCommandHandler : IRequestHandler<UpdateRolePer
             return Common.Models.Result.Failure("Cannot modify permissions for system roles");
         }
 
-        // Remove existing permissions
-        var existingPermissions = await _context.RolePermissions
+        // Hard-delete existing permissions. A plain Remove() is turned into a soft-delete
+        // by SaveChanges (RolePermission is a BaseEntity), but the permission checks
+        // (PermissionAuthorizationHandler, GetUserByIdQuery) don't filter IsDeleted - so a
+        // soft-deleted mapping would still grant access, making a permission removal here
+        // silently ineffective. ExecuteDelete issues a real DELETE that actually revokes it.
+        await _context.RolePermissions
             .Where(rp => rp.RoleId == request.RoleId)
-            .ToListAsync(cancellationToken);
-
-        foreach (var rolePermission in existingPermissions)
-        {
-            _context.RolePermissions.Remove(rolePermission);
-        }
+            .ExecuteDeleteAsync(cancellationToken);
 
         // Add new permissions
         foreach (var permissionCode in request.PermissionCodes)

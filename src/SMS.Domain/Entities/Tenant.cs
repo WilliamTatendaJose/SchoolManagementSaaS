@@ -10,7 +10,13 @@ public class Tenant : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
+    /// <summary>School logo as a data URI (data:image/...;base64,...) so it embeds in PDFs
+    /// and renders in the UI without an external image host or S3 round-trip.</summary>
     public string? Logo { get; set; }
+    /// <summary>Primary brand colour (#RRGGBB) used for headers/accents on branded PDFs.</summary>
+    public string? PrimaryColor { get; set; }
+    /// <summary>Secondary/accent brand colour (#RRGGBB).</summary>
+    public string? AccentColor { get; set; }
     public string? Address { get; set; }
     public string? City { get; set; }
     public string? Country { get; set; } = "Zimbabwe";

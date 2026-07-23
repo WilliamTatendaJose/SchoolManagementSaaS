@@ -94,6 +94,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     // LMS-lite
     public DbSet<Assignment> Assignments => Set<Assignment>();
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
+    public DbSet<CourseMaterial> CourseMaterials => Set<CourseMaterial>();
 
     // Discipline
     public DbSet<DisciplineRecord> DisciplineRecords => Set<DisciplineRecord>();
@@ -103,6 +104,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     // Audit
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    // File storage (DB-backed)
+    public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
 
     /// <summary>
     /// The tenant scoping the current context. Referenced by the global query filter so

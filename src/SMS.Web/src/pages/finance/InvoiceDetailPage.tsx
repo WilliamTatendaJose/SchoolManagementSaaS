@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { CalendarDays, CreditCard, Download, Printer, Receipt } from 'lucide-react'
+import { CalendarDays, CreditCard, Download, FileText, Printer, Receipt } from 'lucide-react'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { fetchInvoice } from '../../api/finance'
+import { downloadInvoicePdf, fetchInvoice } from '../../api/finance'
 import { downloadReceipt } from '../../api/reports'
 import { PAYMENT_METHOD_LABELS } from '../../api/types'
 import { useAuthStore } from '../../auth/authStore'
@@ -17,6 +17,7 @@ export function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>()
   const canRecordPayment = useAuthStore((s) => s.hasPermission('payments.record'))
   const [paymentOpen, setPaymentOpen] = useState(false)
+  const [downloadingPdf, setDownloadingPdf] = useState(false)
 
   const { data: invoice, isLoading } = useQuery({
     queryKey: ['invoice', id],
@@ -41,6 +42,21 @@ export function InvoiceDetailPage() {
         backTo="/finance"
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              loading={downloadingPdf}
+              onClick={async () => {
+                setDownloadingPdf(true)
+                try {
+                  await downloadInvoicePdf(invoice.id, invoice.invoiceNumber)
+                } finally {
+                  setDownloadingPdf(false)
+                }
+              }}
+            >
+              <FileText className="h-4 w-4" strokeWidth={2} />
+              PDF
+            </Button>
             <Button
               variant="secondary"
               onClick={() => window.open(`/finance/invoices/${invoice.id}/print`, '_blank', 'noopener,noreferrer')}

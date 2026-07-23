@@ -10,10 +10,8 @@ namespace SMS.Application.Features.Lms.Commands;
 public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCommand, Result<Guid>>
 {
     private readonly IApplicationDbContext _context;
-    // Resolved lazily (not constructor-injected): building a live IFileStorageService
-    // constructs the AWS S3 client, which eagerly resolves AWS credentials and can hang
-    // for 15-30s before failing wherever they aren't configured. Most assignments have
-    // no attachment, so that cost/failure must not be paid on every create.
+    // Resolved lazily (not constructor-injected) so storage is only touched when there's
+    // actually a file to store. File storage is DB-backed (no external dependency).
     private readonly IServiceProvider _serviceProvider;
 
     public CreateAssignmentCommandHandler(IApplicationDbContext context, IServiceProvider serviceProvider)

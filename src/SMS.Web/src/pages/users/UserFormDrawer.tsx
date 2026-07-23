@@ -7,6 +7,7 @@ import { registerUser } from '../../api/users'
 import { Button } from '../../components/ui/Button'
 import { Drawer } from '../../components/ui/Drawer'
 import { TextField } from '../../components/ui/Field'
+import { GuardianPicker } from './GuardianPicker'
 
 export function UserFormDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const queryClient = useQueryClient()
@@ -17,6 +18,8 @@ export function UserFormDrawer({ open, onClose }: { open: boolean; onClose: () =
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [roles, setRoles] = useState<Set<string>>(new Set())
+  const [guardianId, setGuardianId] = useState<string | null>(null)
+  const [guardianLabel, setGuardianLabel] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -30,6 +33,8 @@ export function UserFormDrawer({ open, onClose }: { open: boolean; onClose: () =
       setPhone('')
       setPassword('')
       setRoles(new Set())
+      setGuardianId(null)
+      setGuardianLabel('')
       setError(null)
     }
   }, [open])
@@ -55,6 +60,7 @@ export function UserFormDrawer({ open, onClose }: { open: boolean; onClose: () =
         lastName,
         phone: phone || undefined,
         roles: Array.from(roles),
+        guardianId: guardianId ?? undefined,
       })
       await queryClient.invalidateQueries({ queryKey: ['users'] })
       onClose()
@@ -128,6 +134,15 @@ export function UserFormDrawer({ open, onClose }: { open: boolean; onClose: () =
             ))}
           </div>
         </div>
+
+        <GuardianPicker
+          selectedId={guardianId}
+          selectedLabel={guardianLabel}
+          onSelect={(id, label) => {
+            setGuardianId(id)
+            setGuardianLabel(label)
+          }}
+        />
 
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">

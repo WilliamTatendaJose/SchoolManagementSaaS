@@ -22,6 +22,15 @@ public class PaynowOptions
     /// <summary>URL the payer's browser is returned to after paying.</summary>
     public string? ReturnUrl { get; set; }
 
+    /// <summary>
+    /// Overrides the <c>authemail</c> sent to Paynow. While the integration is in Paynow's
+    /// <em>test</em> mode, this must equal the merchant's registered email or Paynow rejects
+    /// the request; set it to that address so payments go through regardless of the payer
+    /// email the UI collects. In production, leave it empty so the actual payer's email is
+    /// used (Paynow emails them a receipt).
+    /// </summary>
+    public string? AuthEmail { get; set; }
+
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(IntegrationId) && !string.IsNullOrWhiteSpace(IntegrationKey);
 }

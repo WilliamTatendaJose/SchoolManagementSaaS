@@ -34,6 +34,13 @@ public class PaynowPaymentGatewayService : IPaymentGatewayService
             return new PaymentInitiationResult { Success = false, Error = "Paynow is not configured" };
         }
 
+        // In Paynow test mode the authemail must equal the merchant's registered email, so
+        // a configured AuthEmail overrides the payer's; in production AuthEmail is empty and
+        // the payer's own email is used (Paynow sends them a receipt).
+        var authEmail = !string.IsNullOrWhiteSpace(_options.AuthEmail)
+            ? _options.AuthEmail
+            : request.Email ?? string.Empty;
+
         // Field order matters: the hash is built over the values in this order.
         var fields = new List<KeyValuePair<string, string>>
         {
@@ -43,7 +50,7 @@ public class PaynowPaymentGatewayService : IPaymentGatewayService
             new("additionalinfo", request.ItemDescription),
             new("returnurl", _options.ReturnUrl ?? string.Empty),
             new("resulturl", BuildResultUrl(request.TenantId)),
-            new("authemail", request.Email ?? string.Empty),
+            new("authemail", authEmail),
             new("status", "Message")
         };
 

@@ -1,5 +1,6 @@
 using System.Text;
 using FluentAssertions;
+using SMS.Application.Common.Branding;
 using SMS.Application.Interfaces;
 using SMS.Infrastructure.Services.Reports;
 using Xunit;
@@ -13,7 +14,7 @@ public class ReceiptPdfTests
     {
         var model = new ReceiptModel
         {
-            SchoolName = "Finance School",
+            Branding = new SchoolBranding { SchoolName = "Finance School" },
             ReceiptNumber = "RCP-2026-000001",
             StudentName = "Dave Student",
             StudentNumber = "S-DEF",

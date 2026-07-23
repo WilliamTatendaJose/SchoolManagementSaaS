@@ -7,6 +7,9 @@ import type {
   OnlinePaymentInitiationDto,
   PaymentSettlementDto,
   StudentAcademicResultsDto,
+  StudentAssignmentDto,
+  StudentCourseMaterialDto,
+  StudentDetailDto,
 } from './types'
 
 export async function fetchMyChildren() {
@@ -64,5 +67,35 @@ export async function initiateChildPayment(invoiceId: string, email?: string, ph
 
 export async function checkChildPaymentStatus(paymentId: string) {
   const { data } = await apiClient.post<PaymentSettlementDto>(`/portal/payments/${paymentId}/status`)
+  return data
+}
+
+export async function fetchChildProfile(studentId: string) {
+  const { data } = await apiClient.get<StudentDetailDto>(`/portal/children/${studentId}/profile`)
+  return data
+}
+
+export async function fetchChildAssignments(studentId: string) {
+  const { data } = await apiClient.get<StudentAssignmentDto[]>(`/portal/children/${studentId}/assignments`)
+  return data
+}
+
+export async function fetchChildMaterials(studentId: string) {
+  const { data } = await apiClient.get<StudentCourseMaterialDto[]>(`/portal/children/${studentId}/materials`)
+  return data
+}
+
+export async function submitChildAssignment(
+  studentId: string,
+  assignmentId: string,
+  payload: { comment?: string; attachment?: File | null },
+) {
+  const form = new FormData()
+  if (payload.comment) form.append('Comment', payload.comment)
+  if (payload.attachment) form.append('Attachment', payload.attachment)
+  const { data } = await apiClient.post<{ id: string }>(
+    `/portal/children/${studentId}/assignments/${assignmentId}/submit`,
+    form,
+  )
   return data
 }

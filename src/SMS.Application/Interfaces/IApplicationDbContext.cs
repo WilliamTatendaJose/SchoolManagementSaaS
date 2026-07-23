@@ -79,6 +79,7 @@ public interface IApplicationDbContext
     // LMS-lite
     DbSet<Assignment> Assignments { get; }
     DbSet<AssignmentSubmission> AssignmentSubmissions { get; }
+    DbSet<CourseMaterial> CourseMaterials { get; }
     
     // Discipline
     DbSet<DisciplineRecord> DisciplineRecords { get; }
@@ -88,6 +89,9 @@ public interface IApplicationDbContext
     
     // Audit
     DbSet<AuditLog> AuditLogs { get; }
-    
+
+    // File storage (DB-backed)
+    DbSet<StoredFile> StoredFiles { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

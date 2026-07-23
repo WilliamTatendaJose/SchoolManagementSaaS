@@ -13,11 +13,19 @@ public record StudentAssignmentDto
 {
     public Guid AssignmentId { get; init; }
     public string Title { get; init; } = string.Empty;
+    public string? Description { get; init; }
     public string SubjectName { get; init; } = string.Empty;
     public DateTime DueDate { get; init; }
     public string? AttachmentFileName { get; init; }
     public string? AttachmentUrl { get; init; }
+
     public bool HasSubmitted { get; init; }
     public string? SubmissionStatus { get; init; }
+    public DateTime? SubmittedAt { get; init; }
     public decimal? Grade { get; init; }
+    public string? Feedback { get; init; }
+
+    /// <summary>The student's own submitted file (if any), for download.</summary>
+    public string? SubmissionAttachmentFileName { get; init; }
+    public string? SubmissionAttachmentUrl { get; init; }
 }

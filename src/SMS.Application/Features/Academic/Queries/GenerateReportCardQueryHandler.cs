@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SMS.Application.Common.Branding;
 using SMS.Application.Common.Grading;
 using SMS.Application.Common.Models;
 using SMS.Application.Interfaces;
@@ -59,7 +60,7 @@ public class GenerateReportCardQueryHandler : IRequestHandler<GenerateReportCard
 
         var model = new ReportCardModel
         {
-            SchoolName = tenant?.Name ?? "School",
+            Branding = BrandingBuilder.From(tenant),
             StudentName = results.StudentName,
             StudentNumber = results.StudentNumber,
             ClassName = results.ClassName,

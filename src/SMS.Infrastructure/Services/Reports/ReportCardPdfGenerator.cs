@@ -26,12 +26,8 @@ public class ReportCardPdfGenerator : IReportCardGenerator
                 page.Margin(2, Unit.Centimetre);
                 page.DefaultTextStyle(x => x.FontSize(11));
 
-                page.Header().Column(col =>
-                {
-                    col.Item().Text(model.SchoolName).FontSize(18).SemiBold();
-                    col.Item().Text("Student Report Card").FontSize(13);
-                    col.Item().PaddingTop(2).Text($"{model.TermName}  •  {model.GradingScheme} grading");
-                });
+                page.Header().Element(h =>
+                    BrandedHeader.Compose(h, model.Branding, "Report Card", $"{model.TermName} • {model.GradingScheme}"));
 
                 page.Content().PaddingVertical(10).Column(col =>
                 {
@@ -53,11 +49,12 @@ public class ReportCardPdfGenerator : IReportCardGenerator
                             columns.RelativeColumn(2);
                         });
 
+                        var accent = BrandedHeader.Accent(model.Branding);
                         table.Header(header =>
                         {
-                            header.Cell().Element(HeaderCell).Text("Subject");
-                            header.Cell().Element(HeaderCell).AlignRight().Text("Percentage");
-                            header.Cell().Element(HeaderCell).AlignRight().Text("Grade");
+                            header.Cell().Element(c => HeaderCell(c, accent)).Text("Subject");
+                            header.Cell().Element(c => HeaderCell(c, accent)).AlignRight().Text("Percentage");
+                            header.Cell().Element(c => HeaderCell(c, accent)).AlignRight().Text("Grade");
                         });
 
                         foreach (var subject in model.Subjects)
@@ -88,14 +85,16 @@ public class ReportCardPdfGenerator : IReportCardGenerator
                     }
                 });
 
-                page.Footer().AlignCenter().Text($"Generated {model.GeneratedAt:dd MMM yyyy}").FontSize(9);
+                page.Footer().Element(f =>
+                    BrandedHeader.Footer(f, model.Branding, $"Generated {model.GeneratedAt:dd MMM yyyy}"));
             });
         }).GeneratePdf();
     }
 
-    private static IContainer HeaderCell(IContainer container) =>
-        container.BorderBottom(1).PaddingVertical(4).DefaultTextStyle(x => x.SemiBold());
+    private static IContainer HeaderCell(IContainer container, Color accent) =>
+        container.BorderBottom(1.5f).BorderColor(accent).PaddingVertical(4)
+            .DefaultTextStyle(x => x.SemiBold().FontColor(accent));
 
     private static IContainer BodyCell(IContainer container) =>
-        container.BorderBottom(0.5f).PaddingVertical(3);
+        container.BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).PaddingVertical(3);
 }

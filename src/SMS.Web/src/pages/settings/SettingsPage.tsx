@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BookOpenCheck, Bus, CalendarClock, CreditCard, Library, Lock, Mail, Save, School, ShieldCheck, Users } from 'lucide-react'
+import { BookOpenCheck, Bus, CalendarClock, CreditCard, Image as ImageIcon, Library, Lock, Mail, Save, School, ShieldCheck, Upload, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { fetchSettings, updateSettings } from '../../api/settings'
 import { getErrorMessage } from '../../api/errors'
@@ -18,6 +18,8 @@ export function SettingsPage() {
 
   const [name, setName] = useState('')
   const [logo, setLogo] = useState('')
+  const [primaryColor, setPrimaryColor] = useState('#0F172A')
+  const [accentColor, setAccentColor] = useState('#2563EB')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [website, setWebsite] = useState('')
@@ -34,6 +36,8 @@ export function SettingsPage() {
     if (settings) {
       setName(settings.name)
       setLogo(settings.logo ?? '')
+      setPrimaryColor(settings.primaryColor || '#0F172A')
+      setAccentColor(settings.accentColor || '#2563EB')
       setPhone(settings.phone ?? '')
       setEmail(settings.email ?? '')
       setWebsite(settings.website ?? '')
@@ -54,6 +58,8 @@ export function SettingsPage() {
       await updateSettings({
         name,
         logo: logo || undefined,
+        primaryColor,
+        accentColor,
         phone: phone || undefined,
         email: email || undefined,
         website: website || undefined,
@@ -70,6 +76,26 @@ export function SettingsPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  function handleLogoFile(fileList: FileList | null) {
+    const file = fileList?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose an image file for the logo.')
+      return
+    }
+    if (file.size > 750 * 1024) {
+      setError('Logo image is too large. Please use an image under 750KB.')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      setError(null)
+      setLogo(String(reader.result)) // data URI
+    }
+    reader.onerror = () => setError('Could not read that image.')
+    reader.readAsDataURL(file)
   }
 
   function requestUpgrade() {
@@ -125,12 +151,62 @@ export function SettingsPage() {
 
           <fieldset disabled={!canManage} className="mt-4 space-y-4 disabled:opacity-70">
             <TextField label="School name" required value={name} onChange={(e) => setName(e.target.value)} />
-            <TextField
-              label="Logo URL"
-              value={logo}
-              onChange={(e) => setLogo(e.target.value)}
-              placeholder="https://…"
-            />
+
+            <div>
+              <span className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Logo <span className="font-normal text-slate-400">— appears on report cards, invoices and receipts</span>
+              </span>
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+                  {logo ? (
+                    <img src={logo} alt="School logo" className="h-full w-full object-contain" />
+                  ) : (
+                    <ImageIcon className="h-6 w-6 text-slate-300" strokeWidth={1.75} />
+                  )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                    <Upload className="h-4 w-4" strokeWidth={2} />
+                    {logo ? 'Replace logo' : 'Upload logo'}
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleLogoFile(e.target.files)} />
+                  </label>
+                  {logo && (
+                    <button
+                      type="button"
+                      onClick={() => setLogo('')}
+                      className="w-fit text-xs font-medium text-red-600 hover:underline dark:text-red-400"
+                    >
+                      Remove logo
+                    </button>
+                  )}
+                  <span className="text-xs text-slate-400">PNG or JPG, under 750KB.</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <span className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Brand colours</span>
+              <div className="grid grid-cols-2 gap-4">
+                <ColorField label="Primary" value={primaryColor} onChange={setPrimaryColor} />
+                <ColorField label="Accent" value={accentColor} onChange={setAccentColor} />
+              </div>
+              {/* Live preview of how the document header will look */}
+              <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-3 p-3" style={{ borderBottom: `2px solid ${accentColor}` }}>
+                  {logo && <img src={logo} alt="" className="h-8 w-8 object-contain" />}
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold" style={{ color: primaryColor }}>
+                      {name || 'Your School'}
+                    </p>
+                    <p className="text-[10px] text-slate-400">Report card • Invoice • Receipt</p>
+                  </div>
+                  <span className="text-xs font-semibold" style={{ color: accentColor }}>
+                    Invoice
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <TextField label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
               <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -227,6 +303,30 @@ export function SettingsPage() {
           </div>
         </div>
       </form>
+    </div>
+  )
+}
+
+function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">{label}</span>
+      <div className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 dark:border-slate-700 dark:bg-slate-900">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value.toUpperCase())}
+          className="h-7 w-9 cursor-pointer rounded border-0 bg-transparent p-0"
+          aria-label={`${label} colour`}
+        />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value.toUpperCase())}
+          className="w-full bg-transparent text-sm text-slate-700 focus:outline-none dark:text-slate-200"
+          maxLength={7}
+        />
+      </div>
     </div>
   )
 }

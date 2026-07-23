@@ -38,4 +38,15 @@ public class FinanceReportsController : BaseApiController
             ? File(result.Data!.Content, "application/pdf", result.Data.FileName)
             : NotFound(result.Error);
     }
+
+    /// <summary>Download a branded PDF of an invoice.</summary>
+    [HttpGet("invoices/{invoiceId:guid}")]
+    [RequirePermission(Permissions.FinanceView)]
+    public async Task<IActionResult> GetInvoicePdf(Guid invoiceId)
+    {
+        var result = await Mediator.Send(new GenerateInvoiceQuery(invoiceId));
+        return result.IsSuccess
+            ? File(result.Data!.Content, "application/pdf", result.Data.FileName)
+            : NotFound(result.Error);
+    }
 }

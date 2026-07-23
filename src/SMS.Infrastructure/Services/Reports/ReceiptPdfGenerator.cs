@@ -26,14 +26,10 @@ public class ReceiptPdfGenerator : IReceiptGenerator
                 page.Margin(1.5f, Unit.Centimetre);
                 page.DefaultTextStyle(x => x.FontSize(11));
 
-                page.Header().Column(col =>
-                {
-                    col.Item().Text(model.SchoolName).FontSize(16).SemiBold();
-                    col.Item().Text("Payment Receipt").FontSize(12);
-                    col.Item().PaddingTop(2).Text($"Receipt No: {model.ReceiptNumber}");
-                });
+                page.Header().Element(h =>
+                    BrandedHeader.Compose(h, model.Branding, "Payment Receipt", $"No. {model.ReceiptNumber}"));
 
-                page.Content().PaddingVertical(10).Column(col =>
+                page.Content().PaddingVertical(12).Column(col =>
                 {
                     col.Spacing(6);
                     col.Item().Text($"Date: {model.PaymentDate:dd MMM yyyy}");
@@ -41,14 +37,15 @@ public class ReceiptPdfGenerator : IReceiptGenerator
                     col.Item().Text($"Invoice: {model.InvoiceNumber}");
                     col.Item().Text($"Method: {model.PaymentMethod}");
 
-                    col.Item().PaddingTop(6)
+                    col.Item().PaddingTop(8).Background(BrandedHeader.Accent(model.Branding)).Padding(8)
                         .Text($"Amount paid: {model.Currency} {model.Amount.ToString("0.00", CultureInfo.InvariantCulture)}")
-                        .FontSize(13).SemiBold();
+                        .FontSize(14).SemiBold().FontColor(Colors.White);
 
-                    col.Item().Text($"Remaining balance: {model.Currency} {model.RemainingBalance.ToString("0.00", CultureInfo.InvariantCulture)}");
+                    col.Item().PaddingTop(4).Text($"Remaining balance: {model.Currency} {model.RemainingBalance.ToString("0.00", CultureInfo.InvariantCulture)}")
+                        .SemiBold();
                 });
 
-                page.Footer().AlignCenter().Text("Thank you.").FontSize(9);
+                page.Footer().Element(f => BrandedHeader.Footer(f, model.Branding, "Thank you for your payment."));
             });
         }).GeneratePdf();
     }

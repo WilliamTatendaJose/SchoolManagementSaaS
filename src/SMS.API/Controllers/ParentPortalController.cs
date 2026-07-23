@@ -6,6 +6,12 @@ using SMS.Application.Features.ParentPortal.Queries;
 
 namespace SMS.API.Controllers;
 
+public class PortalSubmitAssignmentRequest
+{
+    public string? Comment { get; set; }
+    public IFormFile? Attachment { get; set; }
+}
+
 /// <summary>
 /// Read-only (plus fee payment) portal for parents/guardians, scoped to their own
 /// children. Access control is by ownership (the caller's guardian record), so no
@@ -53,6 +59,61 @@ public class ParentPortalController : BaseApiController
     {
         var result = await Mediator.Send(new GetMyChildAttendanceQuery { StudentId = studentId, AcademicTermId = termId });
         return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
+    }
+
+    /// <summary>Full profile (bio, class, guardians, balances) for one of the caller's children.</summary>
+    [HttpGet("children/{studentId:guid}/profile")]
+    public async Task<IActionResult> GetChildProfile(Guid studentId)
+    {
+        var result = await Mediator.Send(new GetMyChildProfileQuery(studentId));
+        return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
+    }
+
+    /// <summary>Assignments for one of the caller's children, with attachment + submission download links.</summary>
+    [HttpGet("children/{studentId:guid}/assignments")]
+    public async Task<IActionResult> GetChildAssignments(Guid studentId)
+    {
+        var result = await Mediator.Send(new GetMyChildAssignmentsQuery(studentId));
+        return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
+    }
+
+    /// <summary>Course materials (notes, worksheets, links) for one of the caller's children's class.</summary>
+    [HttpGet("children/{studentId:guid}/materials")]
+    public async Task<IActionResult> GetChildMaterials(Guid studentId)
+    {
+        var result = await Mediator.Send(new GetMyChildCourseMaterialsQuery(studentId));
+        return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
+    }
+
+    /// <summary>Submit (or replace, until graded) the caller's child's work for an assignment.</summary>
+    [HttpPost("children/{studentId:guid}/assignments/{assignmentId:guid}/submit")]
+    public async Task<IActionResult> SubmitChildAssignment(Guid studentId, Guid assignmentId, [FromForm] PortalSubmitAssignmentRequest request)
+    {
+        var (fileName, contentType, content) = await ReadAttachmentAsync(request.Attachment);
+
+        var result = await Mediator.Send(new SubmitMyChildAssignmentCommand
+        {
+            StudentId = studentId,
+            AssignmentId = assignmentId,
+            Comment = request.Comment,
+            AttachmentFileName = fileName,
+            AttachmentContentType = contentType,
+            AttachmentContent = content
+        });
+
+        return result.IsSuccess ? Ok(new { Id = result.Data }) : BadRequest(result.Error);
+    }
+
+    private static async Task<(string? FileName, string? ContentType, byte[]? Content)> ReadAttachmentAsync(IFormFile? file)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return (null, null, null);
+        }
+
+        using var stream = new MemoryStream();
+        await file.CopyToAsync(stream);
+        return (file.FileName, file.ContentType, stream.ToArray());
     }
 
     /// <summary>Download a PDF report card for one of the caller's children.</summary>

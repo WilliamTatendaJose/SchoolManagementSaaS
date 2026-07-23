@@ -595,6 +595,8 @@ export interface UpdateUserRequest {
   lastName: string
   phone?: string
   isActive: boolean
+  /** Guardian this login belongs to (parent portal access), or null for none. */
+  guardianId?: string | null
 }
 
 export interface UpdateMyProfileRequest {
@@ -988,6 +990,51 @@ export interface AssignmentDto {
   rosterCount: number
 }
 
+export interface StudentAssignmentDto {
+  assignmentId: string
+  title: string
+  description?: string | null
+  subjectName: string
+  dueDate: string
+  attachmentFileName?: string | null
+  attachmentUrl?: string | null
+  hasSubmitted: boolean
+  submissionStatus?: string | null
+  submittedAt?: string | null
+  grade?: number | null
+  feedback?: string | null
+  submissionAttachmentFileName?: string | null
+  submissionAttachmentUrl?: string | null
+}
+
+export interface CourseMaterialDto {
+  id: string
+  title: string
+  description?: string | null
+  className: string
+  subjectName: string
+  termName?: string | null
+  kind: 'Link' | 'File'
+  url?: string | null
+  attachmentFileName?: string | null
+  downloadUrl?: string | null
+  uploadedByName?: string | null
+  createdAt: string
+  isPublished: boolean
+}
+
+export interface StudentCourseMaterialDto {
+  id: string
+  title: string
+  description?: string | null
+  subjectName: string
+  termName?: string | null
+  kind: 'Link' | 'File'
+  link?: string | null
+  fileName?: string | null
+  createdAt: string
+}
+
 export interface AssignmentRosterRowDto {
   studentId: string
   studentName: string
@@ -1347,6 +1394,8 @@ export interface SchoolSettingsDto {
   name: string
   code: string
   logo?: string | null
+  primaryColor?: string | null
+  accentColor?: string | null
   address?: string | null
   city?: string | null
   country?: string | null
@@ -1373,6 +1422,8 @@ export const SUBSCRIPTION_PLANS = ['Basic', 'Standard', 'Premium'] as const
 export interface UpdateSchoolSettingsRequest {
   name: string
   logo?: string
+  primaryColor?: string
+  accentColor?: string
   address?: string
   city?: string
   country?: string

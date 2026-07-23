@@ -866,6 +866,85 @@ namespace SMS.Infrastructure.Migrations
                     b.ToTable("Classrooms");
                 });
 
+            modelBuilder.Entity("SMS.Domain.Entities.CourseMaterial", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AcademicTermId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AttachmentFileName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AttachmentKey")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UploadedByStaffId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicTermId");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UploadedByStaffId");
+
+                    b.ToTable("CourseMaterials");
+                });
+
             modelBuilder.Entity("SMS.Domain.Entities.DisciplineRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2197,6 +2276,58 @@ namespace SMS.Infrastructure.Migrations
                     b.ToTable("Staff", (string)null);
                 });
 
+            modelBuilder.Entity("SMS.Domain.Entities.StoredFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("Length")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("StoredFiles");
+                });
+
             modelBuilder.Entity("SMS.Domain.Entities.Stream", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2608,6 +2739,9 @@ namespace SMS.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AccentColor")
+                        .HasColumnType("text");
+
                     b.Property<string>("Address")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -2680,6 +2814,9 @@ namespace SMS.Infrastructure.Migrations
                     b.Property<string>("Phone")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PrimaryColor")
+                        .HasColumnType("text");
 
                     b.Property<int>("SmsCredits")
                         .HasColumnType("integer");
@@ -3318,6 +3455,45 @@ namespace SMS.Infrastructure.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("SMS.Domain.Entities.CourseMaterial", b =>
+                {
+                    b.HasOne("SMS.Domain.Entities.AcademicTerm", "AcademicTerm")
+                        .WithMany()
+                        .HasForeignKey("AcademicTermId");
+
+                    b.HasOne("SMS.Domain.Entities.Class", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SMS.Domain.Entities.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SMS.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SMS.Domain.Entities.Staff", "UploadedByStaff")
+                        .WithMany()
+                        .HasForeignKey("UploadedByStaffId");
+
+                    b.Navigation("AcademicTerm");
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("UploadedByStaff");
+                });
+
             modelBuilder.Entity("SMS.Domain.Entities.DisciplineRecord", b =>
                 {
                     b.HasOne("SMS.Domain.Entities.Staff", "ReportedBy")
@@ -3695,6 +3871,17 @@ namespace SMS.Infrastructure.Migrations
                     b.Navigation("Tenant");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SMS.Domain.Entities.StoredFile", b =>
+                {
+                    b.HasOne("SMS.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("SMS.Domain.Entities.Stream", b =>

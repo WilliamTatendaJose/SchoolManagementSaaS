@@ -92,7 +92,7 @@ public class ReportCardTests : IAsyncLifetime
     {
         var model = new ReportCardModel
         {
-            SchoolName = "Report School",
+            Branding = new SMS.Application.Common.Branding.SchoolBranding { SchoolName = "Report School" },
             StudentName = "Ray Student",
             StudentNumber = StudentNumber,
             ClassName = "Form 1",

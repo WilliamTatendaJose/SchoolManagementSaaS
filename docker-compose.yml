@@ -27,6 +27,22 @@ services:
         condition: service_healthy
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sms_db_dev;Username=postgres;Password=@S773447131;SslMode=Disable"
+      # Paynow / WhatsApp credentials. The container CANNOT read the host's .NET User
+      # Secrets (those are a host-only dev convenience, never mounted in), so the app
+      # would otherwise report "Paynow is not configured" here even though the host has
+      # it set. Values come from a gitignored .env file next to this compose file
+      # (docker compose substitutes ${...} from it) - so no secret is committed. The
+      # ":-" default keeps the app building/running when .env is absent.
+      Paynow__IntegrationId: "${PAYNOW_INTEGRATION_ID:-}"
+      Paynow__IntegrationKey: "${PAYNOW_INTEGRATION_KEY:-}"
+      # In Paynow test mode authemail must match the merchant's registered email, so pin
+      # it here; clear it (empty) for production so payers get their own receipts.
+      Paynow__AuthEmail: "${PAYNOW_AUTH_EMAIL:-}"
+      # Where Paynow returns the payer's browser after paying - point it at the web
+      # container's host port so the return page actually loads.
+      Paynow__ReturnUrl: "${PAYNOW_RETURN_URL:-http://localhost:5180/payments/return}"
+      WhatsApp__AccessToken: "${WHATSAPP_ACCESS_TOKEN:-}"
+      WhatsApp__PhoneNumberId: "${WHATSAPP_PHONE_NUMBER_ID:-}"
     ports:
       - "59584:8080"
     volumes:

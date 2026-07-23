@@ -1,3 +1,5 @@
+using SMS.Application.Common.Branding;
+
 namespace SMS.Application.Interfaces;
 
 /// <summary>
@@ -10,7 +12,7 @@ public interface IReportCardGenerator
 
 public record ReportCardModel
 {
-    public string SchoolName { get; init; } = string.Empty;
+    public SchoolBranding Branding { get; init; } = new();
     public string StudentName { get; init; } = string.Empty;
     public string StudentNumber { get; init; } = string.Empty;
     public string ClassName { get; init; } = string.Empty;

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { bulkGradeAssignment, fetchAssignmentRoster, remindNonSubmitters } from '../../api/assignments'
 import { getErrorMessage } from '../../api/errors'
+import { downloadStoredFile } from '../../api/files'
 import type { AssignmentGradeEntry, AssignmentRosterRowDto } from '../../api/types'
 import { useAuthStore } from '../../auth/authStore'
 import { Badge } from '../../components/ui/Badge'
@@ -185,16 +186,15 @@ export function AssignmentSubmissionsPage() {
           </span>
         </p>
         {roster.description && <p className="mt-3 text-sm text-slate-700 dark:text-slate-200">{roster.description}</p>}
-        {roster.attachmentFileName && (
-          <a
-            href={roster.attachmentUrl ?? '#'}
-            target="_blank"
-            rel="noreferrer"
+        {roster.attachmentFileName && roster.attachmentUrl && (
+          <button
+            type="button"
+            onClick={() => downloadStoredFile(roster.attachmentUrl!, roster.attachmentFileName ?? undefined)}
             className="mt-3 flex w-fit items-center gap-1.5 text-sm text-brand-600 hover:underline dark:text-brand-300"
           >
             <Paperclip className="h-3.5 w-3.5" strokeWidth={2} />
             {roster.attachmentFileName}
-          </a>
+          </button>
         )}
       </div>
 
@@ -238,16 +238,15 @@ export function AssignmentSubmissionsPage() {
                         </td>
                         <td className="px-4 py-2.5">
                           {row.attachmentUrl ? (
-                            <a
-                              href={row.attachmentUrl}
-                              target="_blank"
-                              rel="noreferrer"
+                            <button
+                              type="button"
+                              onClick={() => downloadStoredFile(row.attachmentUrl!, row.attachmentFileName ?? undefined)}
                               className="flex w-fit items-center gap-1 text-brand-600 hover:underline dark:text-brand-300"
                               title={row.attachmentFileName ?? 'Attachment'}
                             >
                               <Paperclip className="h-3.5 w-3.5" strokeWidth={2} />
                               <span className="max-w-[10rem] truncate">{row.attachmentFileName ?? 'File'}</span>
-                            </a>
+                            </button>
                           ) : row.comment ? (
                             <span className="text-slate-500 dark:text-slate-400">{row.comment}</span>
                           ) : (

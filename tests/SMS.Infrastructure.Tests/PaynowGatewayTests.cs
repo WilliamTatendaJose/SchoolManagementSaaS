@@ -80,4 +80,53 @@ public class PaynowGatewayTests
     {
         PaynowPaymentGatewayService.MapStatus(paynowStatus).Should().Be(expected);
     }
+
+    private static PaynowPaymentGatewayService ServiceWith(CapturingHandler handler, string? authEmail)
+        => new(
+            new HttpClient(handler),
+            Options.Create(new PaynowOptions
+            {
+                IntegrationId = "1234",
+                IntegrationKey = IntegrationKey,
+                InitiateUrl = "https://paynow.example/initiate",
+                AuthEmail = authEmail
+            }),
+            NullLogger<PaynowPaymentGatewayService>.Instance);
+
+    private static Dictionary<string, string> ParseForm(string body) =>
+        body.Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => p.Split('=', 2))
+            .ToDictionary(
+                p => Uri.UnescapeDataString(p[0]),
+                p => p.Length > 1 ? Uri.UnescapeDataString(p[1].Replace('+', ' ')) : string.Empty);
+
+    [Fact]
+    public async Task Initiate_sends_the_configured_AuthEmail_over_the_payer_email()
+    {
+        // Paynow test mode requires authemail == merchant email; the configured AuthEmail
+        // must win over whatever the UI passed as the payer's email.
+        var handler = new CapturingHandler { ResponseBody = "status=Error&error=stub" };
+        var service = ServiceWith(handler, authEmail: "merchant@example.com");
+
+        await service.InitiatePaymentAsync(new PaymentInitiationRequest
+        {
+            Reference = "R1", Amount = 5m, Email = "payer@example.com"
+        });
+
+        ParseForm(handler.LastBody!)["authemail"].Should().Be("merchant@example.com");
+    }
+
+    [Fact]
+    public async Task Initiate_falls_back_to_the_payer_email_when_AuthEmail_is_empty()
+    {
+        var handler = new CapturingHandler { ResponseBody = "status=Error&error=stub" };
+        var service = ServiceWith(handler, authEmail: null);
+
+        await service.InitiatePaymentAsync(new PaymentInitiationRequest
+        {
+            Reference = "R1", Amount = 5m, Email = "payer@example.com"
+        });
+
+        ParseForm(handler.LastBody!)["authemail"].Should().Be("payer@example.com");
+    }
 }

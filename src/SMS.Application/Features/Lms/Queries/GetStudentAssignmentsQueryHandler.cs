@@ -9,10 +9,8 @@ namespace SMS.Application.Features.Lms.Queries;
 public class GetStudentAssignmentsQueryHandler : IRequestHandler<GetStudentAssignmentsQuery, Result<List<StudentAssignmentDto>>>
 {
     private readonly IApplicationDbContext _context;
-    // Resolved lazily (not constructor-injected): building a live IFileStorageService
-    // constructs the AWS S3 client, which eagerly resolves AWS credentials and can hang
-    // for 15-30s before failing wherever they aren't configured. Most assignments have
-    // no attachment, so that cost/failure must not be paid on every list fetch.
+    // Resolved lazily (not constructor-injected) so storage is only touched when a file
+    // download URL is actually needed. File storage is DB-backed (no external dependency).
     private readonly IServiceProvider _serviceProvider;
 
     public GetStudentAssignmentsQueryHandler(IApplicationDbContext context, IServiceProvider serviceProvider)
@@ -43,18 +41,19 @@ public class GetStudentAssignmentsQueryHandler : IRequestHandler<GetStudentAssig
             {
                 a.Id,
                 a.Title,
+                a.Description,
                 SubjectName = a.Subject.Name,
                 a.DueDate,
                 a.AttachmentKey,
                 a.AttachmentFileName,
                 Submission = a.Submissions
                     .Where(s => s.StudentId == request.StudentId)
-                    .Select(s => new { s.Status, s.Grade })
+                    .Select(s => new { s.Status, s.Grade, s.Feedback, s.SubmittedAt, s.AttachmentKey, s.AttachmentFileName })
                     .FirstOrDefault()
             })
             .ToListAsync(cancellationToken);
 
-        var fileStorage = rows.Any(a => a.AttachmentKey != null)
+        var fileStorage = rows.Any(a => a.AttachmentKey != null || a.Submission?.AttachmentKey != null)
             ? _serviceProvider.GetRequiredService<IFileStorageService>()
             : null;
 
@@ -63,13 +62,18 @@ public class GetStudentAssignmentsQueryHandler : IRequestHandler<GetStudentAssig
             {
                 AssignmentId = a.Id,
                 Title = a.Title,
+                Description = a.Description,
                 SubjectName = a.SubjectName,
                 DueDate = a.DueDate,
                 AttachmentFileName = a.AttachmentFileName,
                 AttachmentUrl = a.AttachmentKey != null ? fileStorage!.GetFileUrl(a.AttachmentKey) : null,
                 HasSubmitted = a.Submission != null,
                 SubmissionStatus = a.Submission?.Status,
-                Grade = a.Submission?.Grade
+                SubmittedAt = a.Submission?.SubmittedAt,
+                Grade = a.Submission?.Grade,
+                Feedback = a.Submission?.Feedback,
+                SubmissionAttachmentFileName = a.Submission?.AttachmentFileName,
+                SubmissionAttachmentUrl = a.Submission?.AttachmentKey != null ? fileStorage!.GetFileUrl(a.Submission.AttachmentKey) : null
             })
             .ToList();
 

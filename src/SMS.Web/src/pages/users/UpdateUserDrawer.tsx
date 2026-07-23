@@ -1,11 +1,13 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { getErrorMessage } from '../../api/errors'
+import { fetchGuardian } from '../../api/guardians'
 import type { UserDetailDto } from '../../api/types'
 import { updateUser } from '../../api/users'
 import { Button } from '../../components/ui/Button'
 import { Drawer } from '../../components/ui/Drawer'
 import { TextField } from '../../components/ui/Field'
+import { GuardianPicker } from './GuardianPicker'
 
 export function UpdateUserDrawer({
   open,
@@ -21,8 +23,18 @@ export function UpdateUserDrawer({
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [isActive, setIsActive] = useState(true)
+  const [guardianId, setGuardianId] = useState<string | null>(null)
+  const [guardianLabel, setGuardianLabel] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // Resolve the currently-linked guardian's name for display (the user DTO only carries
+  // the id). Only fires when the user is already linked to a guardian.
+  const { data: linkedGuardian } = useQuery({
+    queryKey: ['guardian', user.guardianId],
+    queryFn: () => fetchGuardian(user.guardianId!),
+    enabled: open && !!user.guardianId,
+  })
 
   useEffect(() => {
     if (open) {
@@ -30,16 +42,24 @@ export function UpdateUserDrawer({
       setLastName(user.lastName)
       setPhone(user.phone ?? '')
       setIsActive(user.isActive)
+      setGuardianId(user.guardianId ?? null)
+      setGuardianLabel('')
       setError(null)
     }
   }, [open, user])
+
+  useEffect(() => {
+    if (linkedGuardian && guardianId === linkedGuardian.id && !guardianLabel) {
+      setGuardianLabel(linkedGuardian.phone ? `${linkedGuardian.fullName} · ${linkedGuardian.phone}` : linkedGuardian.fullName)
+    }
+  }, [linkedGuardian, guardianId, guardianLabel])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setSubmitting(true)
     try {
-      await updateUser({ id: user.id, firstName, lastName, phone: phone || undefined, isActive })
+      await updateUser({ id: user.id, firstName, lastName, phone: phone || undefined, isActive, guardianId })
       await queryClient.invalidateQueries({ queryKey: ['user', user.id] })
       await queryClient.invalidateQueries({ queryKey: ['users'] })
       onClose()
@@ -83,6 +103,15 @@ export function UpdateUserDrawer({
           Active
         </label>
         <p className="text-xs text-slate-400">Email can't be changed here. Roles are managed separately below.</p>
+
+        <GuardianPicker
+          selectedId={guardianId}
+          selectedLabel={guardianLabel}
+          onSelect={(id, label) => {
+            setGuardianId(id)
+            setGuardianLabel(label)
+          }}
+        />
 
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">

@@ -1,4 +1,3 @@
-using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -32,9 +31,10 @@ public static class DependencyInjection
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
-        services.AddScoped<IFileStorageService, S3FileStorageService>();
+        services.AddScoped<IFileStorageService, DbFileStorageService>();
         services.AddScoped<IReportCardGenerator, ReportCardPdfGenerator>();
         services.AddScoped<IReceiptGenerator, ReceiptPdfGenerator>();
+        services.AddScoped<IInvoiceGenerator, InvoicePdfGenerator>();
 
         // Messaging (SMS + WhatsApp channels)
         services.Configure<SmsOptions>(configuration.GetSection(SmsOptions.SectionName));
@@ -46,10 +46,6 @@ public static class DependencyInjection
         // Payment gateway (Paynow)
         services.Configure<PaynowOptions>(configuration.GetSection(PaynowOptions.SectionName));
         services.AddHttpClient<IPaymentGatewayService, PaynowPaymentGatewayService>();
-
-        // AWS S3
-        services.AddDefaultAWSOptions(configuration.GetAWSOptions());
-        services.AddAWSService<IAmazonS3>();
 
         // JWT Authentication
         var jwtSecretKey = configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key not configured");

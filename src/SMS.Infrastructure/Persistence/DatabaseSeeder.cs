@@ -37,17 +37,15 @@ public static class DatabaseSeeder
     /// no permissions worth preserving, so it is safe to reconcile them on every startup;
     /// staff roles are deliberately left untouched.</para>
     /// </summary>
-    private static async Task ReconcileLockedRolePermissionsAsync(ApplicationDbContext context)
+    internal static async Task ReconcileLockedRolePermissionsAsync(ApplicationDbContext context)
     {
         string[] lockedRoleNames = [DefaultRoles.Parent, DefaultRoles.Student];
         var defaults = DefaultRoles.GetRolePermissions();
         var permissionIdByCode = await context.Permissions.ToDictionaryAsync(p => p.Code, p => p.Id);
 
-        var changed = false;
-
         foreach (var roleName in lockedRoleNames)
         {
-            var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+            var role = await context.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Name == roleName);
             if (role == null)
             {
                 continue;
@@ -58,28 +56,36 @@ public static class DatabaseSeeder
                 .Select(code => permissionIdByCode[code])
                 .ToHashSet();
 
-            var existing = await context.RolePermissions
-                .Where(rp => rp.RoleId == role.Id)
-                .ToListAsync();
-
-            var toRemove = existing.Where(rp => !desiredPermissionIds.Contains(rp.PermissionId)).ToList();
-            if (toRemove.Count > 0)
+            // Hard-delete the unwanted mappings. A plain Remove() would be turned into a
+            // soft-delete by SaveChanges (RolePermission is a BaseEntity), and the
+            // permission checks (PermissionAuthorizationHandler, GetUserByIdQuery) don't
+            // filter IsDeleted - so a soft-deleted mapping would still grant the permission.
+            // ExecuteDelete issues a real DELETE, bypassing the soft-delete interceptor.
+            var toDelete = context.RolePermissions.Where(rp => rp.RoleId == role.Id);
+            if (desiredPermissionIds.Count > 0)
             {
-                context.RolePermissions.RemoveRange(toRemove);
-                changed = true;
+                // Keep the desired ones; drop the rest. (For the locked household roles the
+                // desired set is empty, so this branch is skipped and every mapping goes -
+                // avoiding any provider-specific quirk in translating an empty Contains.)
+                toDelete = toDelete.Where(rp => !desiredPermissionIds.Contains(rp.PermissionId));
             }
+            await toDelete.ExecuteDeleteAsync();
 
-            var existingPermissionIds = existing.Select(rp => rp.PermissionId).ToHashSet();
-            foreach (var permissionId in desiredPermissionIds.Where(id => !existingPermissionIds.Contains(id)))
+            if (desiredPermissionIds.Count > 0)
             {
-                context.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionId = permissionId });
-                changed = true;
-            }
-        }
+                var presentPermissionIds = (await context.RolePermissions
+                    .Where(rp => rp.RoleId == role.Id)
+                    .Select(rp => rp.PermissionId)
+                    .ToListAsync())
+                    .ToHashSet();
 
-        if (changed)
-        {
-            await context.SaveChangesAsync();
+                foreach (var permissionId in desiredPermissionIds.Where(id => !presentPermissionIds.Contains(id)))
+                {
+                    context.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionId = permissionId });
+                }
+
+                await context.SaveChangesAsync();
+            }
         }
     }
 

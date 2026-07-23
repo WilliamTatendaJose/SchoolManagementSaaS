@@ -7,7 +7,9 @@ import type {
   InvoiceDetail,
   InvoiceDto,
   InvoiceGenerationResultDto,
+  OnlinePaymentInitiationDto,
   PaymentDto,
+  PaymentSettlementDto,
   RecordPaymentRequest,
   RecordPaymentResult,
   StudentAccountBalanceDto,
@@ -45,6 +47,37 @@ export async function generateInvoices(payload: GenerateInvoicesRequest) {
 export async function recordPayment(payload: RecordPaymentRequest) {
   const { data } = await apiClient.post<RecordPaymentResult>('/finance/payments', payload)
   return data
+}
+
+/** Starts a Paynow (EcoCash/OneMoney/card) collection against an invoice from the
+ * cashier desk. Returns the poll URL and, for card/web, a redirect URL; for mobile money
+ * Paynow pushes a prompt to the payer's phone and the cashier polls for confirmation. */
+export async function initiateOnlinePayment(payload: {
+  invoiceId: string
+  amount?: number
+  email?: string
+  phone?: string
+}) {
+  const { data } = await apiClient.post<OnlinePaymentInitiationDto>('/payments/online/initiate', payload)
+  return data
+}
+
+export async function checkPaymentStatus(paymentId: string) {
+  const { data } = await apiClient.post<PaymentSettlementDto>(`/payments/${paymentId}/status`)
+  return data
+}
+
+export async function downloadInvoicePdf(invoiceId: string, invoiceNumber: string) {
+  const response = await apiClient.get(`/finance/reports/invoices/${invoiceId}`, { responseType: 'blob' })
+  const safe = invoiceNumber.replace(/[^a-zA-Z0-9-_]/g, '_')
+  const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `Invoice_${safe}.pdf`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.URL.revokeObjectURL(url)
 }
 
 export async function fetchAccountBalance(studentId: string) {
